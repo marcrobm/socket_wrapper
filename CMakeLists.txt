@@ -1,6 +1,8 @@
 # This is the makefile for the eznetwork library which provides a wrapper around bare c network communication
 cmake_minimum_required(VERSION 3.9)
-project(socket_wrapper VERSION 0.1 DESCRIPTION "socket_wrapper description")
+project(socket_wrapper
+        VERSION 0.1.2
+        DESCRIPTION "a wrapper around sockets for tcp communications")
 
 set(CMAKE_CXX_STANDARD 14)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -6,7 +6,7 @@ target_sources(test_socket_wrapper
         ${CMAKE_CURRENT_SOURCE_DIR}/test.h
         ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp
         )
-
+set_property(TARGET test_socket_wrapper PROPERTY CXX_STANDARD 20)
 target_link_libraries(test_socket_wrapper PUBLIC
         gtest_main
         socket_wrapper

@@ -1,6 +1,7 @@
 #include <cstring>
 #include <csignal>
 #include <algorithm>
+#include <sys/poll.h>
 #include "socket_wrapper/ConditionalBufferedStream.h"
 #include "socket_wrapper/SocketException.h"
 
@@ -27,7 +28,7 @@ namespace socket_wrapper {
     }
 
     void ConditionalBufferedStream::processDataSendSignals(const std::vector<char> &data) {
-        if(data.empty()){
+        if (data.empty()) {
             return;
         }
         std::lock_guard<std::recursive_mutex> lk(buffer_event_handlers_mtx);
@@ -66,6 +67,7 @@ namespace socket_wrapper {
     }
 
     ConditionalBufferedStream::~ConditionalBufferedStream() {
+        for(auto x : buffer_event_handlers){::close(x.fd);}
         stream.stopReads(); // results worker thread stopping
         worker.join();
     }
@@ -91,6 +93,18 @@ namespace socket_wrapper {
             return pos != end(data) ? (std::distance(begin(data), pos) + 1) : 0;
         };
         return newline_condition;
+    }
+
+    std::vector<char> ConditionalBufferedStream::readBlocking(int condition_fd) {
+        uint64_t condition_response;
+        std::array<pollfd, 1> poll_fds = {{{.fd = condition_fd, .events = POLLIN, .revents = 0}}};
+        const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), -1);
+        if (poll_result == 0) {
+            throw SocketException(SocketException::SOCKET_POLL,errno);
+        }else{
+            ::read(condition_fd, &condition_response, sizeof(condition_response));
+        }
+        return read(condition_fd);
     }
 
 }

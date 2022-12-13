@@ -22,6 +22,7 @@ namespace socket_wrapper {
             SOCKET_TERMINATION_REQUEST,
             SOCKET_CLOSED,
             SOCKET_READ_TIMEOUT,
+            SOCKET_POLL,
         };
 
         explicit SocketException(Type t, int c_error = -1, ssize_t processed_bytes = -1);

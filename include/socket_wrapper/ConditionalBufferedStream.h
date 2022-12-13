@@ -3,15 +3,19 @@
 
 namespace socket_wrapper {
     /**
-     * a buffer event condition, should return 0 in case of no action
+     * a buffer event condition, should return 0 in case of no action, otherwise the number of bytes to later be read should be returned
      */
     using buffer_event_condition = std::function<int(const std::vector<char> &)>;
 
     /**
-     * This Stream splits incoming data into multiple fragments depending on a condition,
-     * use like shown below
+     * This Stream splits incoming data into segments depending on a condition,
+     * Example where a stream is split into newlines and every line is read individually.
+     * Furthermore poll() can be used on the fd returned by createEventfdOnCondition();
      * auto s = ConditionalBufferedStream(stream);
-     * s.createEventfdOnCondition(buffer_event_condition condition);
+     * auto newline_condition = ConditionalBufferedStream::getDelimiterCondition('\n');
+     * auto read_line_fd = s.createEventfdOnCondition(newline_condition);
+     * s.start();
+     * string line = s.readBlocking(read_line_fd);
      */
     class ConditionalBufferedStream {
     public:
@@ -32,11 +36,21 @@ namespace socket_wrapper {
         void start();
 
         /**
-         * reads available data from buffer
-         * @return data
+         * reads available data, (non-blocking)
+         * @param condition_fd the condition providing the data segments
+         * @return the data segment read
          */
         std::vector<char> read(int condition_fd);
+
+        /**
+         * performs a blocking read
+         * @param condition_fd
+         * @return
+         */
+        std::vector<char> readBlocking(int condition_fd);
+
         static buffer_event_condition getDelimiterCondition(char c);
+
     private:
         std::thread worker;
         BufferedStream stream;

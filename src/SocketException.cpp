@@ -19,6 +19,7 @@ namespace socket_wrapper {
             {SocketException::Type::SOCKET_TERMINATION_REQUEST,  "SOCKET_TERMINATION_REQUEST"},
             {SocketException::Type::SOCKET_CLOSED,               "SOCKET_CLOSED"},
             {SocketException::Type::SOCKET_READ_TIMEOUT,         "SOCKET_READ_TIMEOUT"},
+            {SocketException::Type::SOCKET_POLL,                 "SOCKET_POLL"}
     };
 
     const char *SocketException::what() const noexcept {

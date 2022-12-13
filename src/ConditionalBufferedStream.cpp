@@ -1,5 +1,6 @@
 #include <cstring>
 #include <csignal>
+#include <algorithm>
 #include "socket_wrapper/ConditionalBufferedStream.h"
 #include "socket_wrapper/SocketException.h"
 
@@ -82,6 +83,14 @@ namespace socket_wrapper {
             throw std::out_of_range("A read on condition " + std::to_string(condition_fd) +
                                     " was performed, but there is no data present yet");
         }
+    }
+
+    buffer_event_condition ConditionalBufferedStream::getDelimiterCondition(char delimiter) {
+        auto newline_condition = [c](const std::vector<char> &data) {
+            auto pos = std::find_if(begin(data), end(data), [c](char c) { return c == c; });
+            return pos != end(data) ? (std::distance(begin(data), pos) + 1) : 0;
+        };
+        return newline_condition;
     }
 
 }

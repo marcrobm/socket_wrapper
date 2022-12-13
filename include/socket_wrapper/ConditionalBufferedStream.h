@@ -6,13 +6,12 @@ namespace socket_wrapper {
      * a buffer event condition, should return 0 in case of no action
      */
     using buffer_event_condition = std::function<int(const std::vector<char> &)>;
-    struct buffer_event_handler {
-        buffer_event_condition condition;
-        int fd;
-    };
 
     /**
-     * a class providing a easy way to read fragments from a stream, in a buffered way
+     * This Stream splits incoming data into multiple fragments depending on a condition,
+     * use like shown below
+     * auto s = ConditionalBufferedStream(stream);
+     * s.createEventfdOnCondition(buffer_event_condition condition);
      */
     class ConditionalBufferedStream {
     public:
@@ -37,11 +36,15 @@ namespace socket_wrapper {
          * @return data
          */
         std::vector<char> read(int condition_fd);
-
+        static buffer_event_condition getDelimiterCondition(char c);
     private:
         std::thread worker;
         BufferedStream stream;
 
+        struct buffer_event_handler {
+            buffer_event_condition condition;
+            int fd;
+        };
         /**
          * all conditions waited for
          */
@@ -50,8 +53,6 @@ namespace socket_wrapper {
 
         std::map<int, std::list<std::vector<char>>> received_data_per_condition;
         std::recursive_mutex received_data_per_condition_mtx;
-
-        void sendApplicableBufferEvents();
 
         void ConditionalBufferWorker();
 

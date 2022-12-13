@@ -8,10 +8,8 @@ TEST(ConditionalBufferedStream, ReadUntilDelimiter) {
     using namespace socket_wrapper;
     auto streams = StreamFactory::CreatePipe();
     auto cstream = std::make_shared<ConditionalBufferedStream>(BufferedStream(std::move(streams[1]), 512));
-    auto newline_condition = [](const std::vector<char> &data) {
-        auto pos = std::find_if(begin(data), end(data), [](char c) { return c == '\n'; });
-        return pos != end(data) ? (std::distance(begin(data), pos) + 1) : 0;
-    };
+
+    auto newline_condition = ConditionalBufferedStream::getDelimiterCondition('\n');
     int on_newline_fd = cstream->createEventfdOnCondition(newline_condition);
     cstream->start();
 

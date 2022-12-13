@@ -86,8 +86,8 @@ namespace socket_wrapper {
     }
 
     buffer_event_condition ConditionalBufferedStream::getDelimiterCondition(char delimiter) {
-        auto newline_condition = [c](const std::vector<char> &data) {
-            auto pos = std::find_if(begin(data), end(data), [c](char c) { return c == c; });
+        auto newline_condition = [delimiter](const std::vector<char> &data) {
+            auto pos = std::find_if(begin(data), end(data), [delimiter](char c) { return c == delimiter; });
             return pos != end(data) ? (std::distance(begin(data), pos) + 1) : 0;
         };
         return newline_condition;

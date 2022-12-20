@@ -12,7 +12,6 @@ namespace socket_wrapper {
  * @brief A wrapper class for sockets of Type SOCK_DGRAM
  */
     class UdpDatagram {
-        friend DatagramFactory;
     public:
         UdpDatagram() = delete;
         UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port, IP_VERSION version, int buffer_size = 65536);

@@ -4,6 +4,13 @@
 #include <map>
 #include <string>
 namespace socket_wrapper{
+
+    struct NetworkInterface{
+        std::string name;
+        std::string ip_address;
+        std::string netmask;
+        std::string broadcast_address;
+    };
     enum IP_VERSION{
         IPv4,
         IPv6

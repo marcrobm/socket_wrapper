@@ -3,9 +3,11 @@
 #include "socket_wrapper/StreamFactory.h"
 #include "socket_wrapper/UdpDatagram.h"
 #include "socket_wrapper/BaseTypes.h"
+#include "socket_wrapper/Utils.h"
 
 using namespace std;
 #define TEST_IP_VERSION socket_wrapper::IPv4
+//#define TEST_IP_VERSION socket_wrapper::IPv6
 
 TEST(ConditionalBufferedStream, ReadUntilDelimiter) {
     using namespace socket_wrapper;
@@ -55,5 +57,21 @@ TEST(Datagram, SendthenRead) {
     auto sent_packet = std::vector<char>(message.begin(), message.end());
     conn.write(sent_packet, "127.0.0.0", 8001);
     auto received_packet = conn.read(100);
-    ASSERT_EQ(received_packet,sent_packet);
+    ASSERT_EQ(received_packet, sent_packet);
+}
+
+TEST(Utils, GetLocalIpAddresses) {
+    auto interfaces = socket_wrapper::getLocalNetworkInterfaces(socket_wrapper::IPv4);
+    auto interfacesV6 = socket_wrapper::getLocalNetworkInterfaces(socket_wrapper::IPv6);
+    interfaces.insert(interfaces.end(), interfacesV6.begin(), interfacesV6.end());
+    ASSERT_FALSE(interfaces.empty());
+    for (auto &interface: interfaces) {
+        cout << "name:" << interface.name
+             << " , ip:" << interface.ip_address
+             << " , netmask:" << interface.netmask
+             << " , broadcast:" << interface.broadcast_address << endl;
+        ASSERT_FALSE(interface.ip_address.empty());
+    }
+    cout << "most likely primary IPv4 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv4).ip_address << endl;
+    cout << "most likely primary IPv6 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv4).ip_address << endl;
 }

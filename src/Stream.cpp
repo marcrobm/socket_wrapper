@@ -12,7 +12,7 @@
 
 namespace socket_wrapper {
     Stream::Stream(int socket_fd) : stream_file_descriptor(socket_fd) {
-        // create the end programm listener
+        // create the end program listener
         stop_all_operations_event_fd.store(eventfd(0, EFD_SEMAPHORE));
         if (stop_all_operations_event_fd.load() == -1) {
             throw std::runtime_error("Failed to create event_fd");
@@ -54,7 +54,6 @@ namespace socket_wrapper {
             std::terminate();
             // throw SocketException(SocketException::Type::SOCKET_CLOSE, errno); // terminates, most likely logic error
         }
-
     }
 
     size_t Stream::read(char *buffer, size_t max_bytes_to_read, size_t min_bytes_to_read, int timeout_ms) {
@@ -66,9 +65,9 @@ namespace socket_wrapper {
                 // use poll to find out if there is new data or a termination request
                 std::array<pollfd, 2> poll_fds = {{{.fd = stream_file_descriptor, .events = POLLIN, .revents = 0},
                                                    {.fd = stop_all_operations_event_fd, .events = POLLIN, .revents = 0}}};
-                if (poll(poll_fds.data(), poll_fds.size(),timeout_ms) == -1) {
+                if (poll(poll_fds.data(), poll_fds.size(), timeout_ms) == -1) {
                     // error while polling
-                    throw std::logic_error("poll error");
+                    throw SocketException(SocketException::SOCKET_POLL, errno);
                 } else if (poll_fds[0].revents != 0) {
                     // we received data
                     read_result = ::read(stream_file_descriptor, (char *) buffer + read_bytes,
@@ -83,7 +82,7 @@ namespace socket_wrapper {
                 } else if (poll_fds[1].revents != 0) {
                     // we received a termination request
                     throw SocketException(SocketException::SOCKET_TERMINATION_REQUEST, 0);
-                }else{
+                } else {
                     // we received a timeout
                     throw SocketException(SocketException::SOCKET_READ_TIMEOUT, 0);
                 }

@@ -1,5 +1,5 @@
-#ifndef EZNETWORK_BASETYPES_H
-#define EZNETWORK_BASETYPES_H
+#ifndef SOCKET_WRAPPER_BASETYPES_H
+#define SOCKET_WRAPPER_BASETYPES_H
 
 #include <map>
 #include <string>
@@ -15,6 +15,7 @@ namespace socket_wrapper{
     class StreamFactory;
     class ListenerBase;
     class ConditionalBufferedStream;
+    class DatagramFactory;
 }
 
-#endif //EZNETWORK_BASETYPES_H
+#endif //SOCKET_WRAPPER_BASETYPES_H

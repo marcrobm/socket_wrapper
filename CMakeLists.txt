@@ -14,6 +14,7 @@ add_library(socket_wrapper STATIC
         src/ListenerBase.cpp
         src/BaseTypes.cpp
         src/ConditionalBufferedStream.cpp
+        src/Datagram.cpp
         )
 # the install directory can be changed to not require root privileges
 install(TARGETS socket_wrapper DESTINATION /usr/lib)
@@ -25,7 +26,8 @@ install(FILES
         include/socket_wrapper/BaseTypes.h
         include/socket_wrapper/BufferedStream.h
         include/socket_wrapper/ConditionalBufferedStream.h
-        DESTINATION include/socket_wrapper)
+        include/socket_wrapper/UdpDatagram.h
+        DESTINATION include)
 
 ############################## google test ########################################################
 include(FetchContent)

@@ -23,6 +23,7 @@ namespace socket_wrapper {
             SOCKET_CLOSED,
             SOCKET_READ_TIMEOUT,
             SOCKET_POLL,
+            SOCKET_RECEIVE_BUFFER_TOO_SMALL,
         };
 
         explicit SocketException(Type t, int c_error = -1, ssize_t processed_bytes = -1);

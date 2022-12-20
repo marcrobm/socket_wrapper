@@ -1,8 +1,11 @@
 #include "test.h"
 #include "socket_wrapper/ConditionalBufferedStream.h"
 #include "socket_wrapper/StreamFactory.h"
+#include "socket_wrapper/UdpDatagram.h"
+#include "socket_wrapper/BaseTypes.h"
 
 using namespace std;
+#define TEST_IP_VERSION socket_wrapper::IPv4
 
 TEST(ConditionalBufferedStream, ReadUntilDelimiter) {
     using namespace socket_wrapper;
@@ -40,7 +43,17 @@ TEST(ConditionalBufferedStream, ReadBlocking) {
     cstream->start();
 
     streams[0].write("abc\nxyz\n", 8, 1);
-    ASSERT_READ_BLOCKING_EQ(cstream,on_newline_fd,"abc\n");
-    ASSERT_READ_BLOCKING_EQ(cstream,on_newline_fd,"xyz\n");
+    ASSERT_READ_BLOCKING_EQ(cstream, on_newline_fd, "abc\n");
+    ASSERT_READ_BLOCKING_EQ(cstream, on_newline_fd, "xyz\n");
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
+}
+
+
+TEST(Datagram, SendthenRead) {
+    auto conn = socket_wrapper::UdpDatagram("127.0.0.0", 8001, TEST_IP_VERSION);
+    std::string message = "SomeTestString";
+    auto sent_packet = std::vector<char>(message.begin(), message.end());
+    conn.write(sent_packet, "127.0.0.0", 8001);
+    auto received_packet = conn.read(100);
+    ASSERT_EQ(received_packet,sent_packet);
 }

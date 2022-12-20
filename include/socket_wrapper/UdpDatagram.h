@@ -19,13 +19,13 @@ namespace socket_wrapper {
         std::vector<char> read(int timeout_ms = -1);
         void write(const std::vector<char> &msg_data, const std::string &destination_ip, int port);
 
+        void stopReads();
         // moving is allowed
         UdpDatagram &operator=(UdpDatagram &&stream_to_assign) noexcept ;
         UdpDatagram(UdpDatagram const &) = delete;
         UdpDatagram(UdpDatagram &&src) noexcept;
         ~UdpDatagram() noexcept;
     private:
-        explicit UdpDatagram(int socket_fd, int buffer_size = 65536);
         std::vector<char> buffer;
         int socket_fd;
         IP_VERSION ip_version;
@@ -34,6 +34,5 @@ namespace socket_wrapper {
         msghdr &setMsghdrParams(msghdr &msg, iovec &iov);
         static int const kInvalidSocketFdMarker = -1;
         void assertRecvmsgSucceded(const msghdr &msg, ssize_t read_result) const;
-
     };
 }

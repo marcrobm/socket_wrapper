@@ -125,4 +125,8 @@ namespace socket_wrapper {
             }
         }
     }
+    void UdpDatagram::stopReads() {
+        uint64_t semaphore_value = std::numeric_limits<uint16_t>::max();
+        ::write(stop_all_operations_event_fd, &semaphore_value, sizeof(semaphore_value));
+    }
 }

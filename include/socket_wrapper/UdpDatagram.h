@@ -1,3 +1,5 @@
+#ifndef SOCKET_WRAPPER_UDPDATAGRAM_H
+#define SOCKET_WRAPPER_UDPDATAGRAM_H
 #include <vector>
 #include <mutex>
 #include <atomic>
@@ -36,3 +38,4 @@ namespace socket_wrapper {
         void assertRecvmsgSucceded(const msghdr &msg, ssize_t read_result) const;
     };
 }
+#endif //SOCKET_WRAPPER_UDPDATAGRAM_H

@@ -15,7 +15,6 @@ namespace socket_wrapper{
     class StreamFactory;
     class ListenerBase;
     class ConditionalBufferedStream;
-    class DatagramFactory;
 }
 
 #endif //SOCKET_WRAPPER_BASETYPES_H

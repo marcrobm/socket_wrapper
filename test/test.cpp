@@ -73,5 +73,5 @@ TEST(Utils, GetLocalIpAddresses) {
         ASSERT_FALSE(interface.ip_address.empty());
     }
     cout << "most likely primary IPv4 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv4).ip_address << endl;
-    cout << "most likely primary IPv6 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv4).ip_address << endl;
+    cout << "most likely primary IPv6 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv6).ip_address << endl;
 }

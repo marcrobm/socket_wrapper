@@ -11,7 +11,7 @@
 
 namespace socket_wrapper {
 
-    ListenerBase::ListenerBase(int port, IP_VERSION version) : stopped_accepting{false} {
+    ListenerBase::ListenerBase(int port, IP_VERSION version): stopped_accepting{false} {
         auto ip_v = (version == IP_VERSION::IPv6) ? AF_INET6 : AF_INET;
         // create the end programm listener
         listener_end_fd.store(eventfd(0, EFD_SEMAPHORE));
@@ -24,7 +24,7 @@ namespace socket_wrapper {
             throw SocketException(SocketException::SOCKET_SOCKET, errno);
         }
         // assign ip and port
-        if (version == IPv6) {
+        if(version == IPv6){
             struct sockaddr_in6 servaddr, cli;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin6_family = ip_v;
@@ -34,7 +34,7 @@ namespace socket_wrapper {
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
             }
-        } else {
+        }else{
             struct sockaddr_in servaddr, cli;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = ip_v;
@@ -51,37 +51,43 @@ namespace socket_wrapper {
             throw SocketException(SocketException::SOCKET_LISTEN, errno);
         }
     }
-
-    void ListenerBase::startAccepting() {
+    void ListenerBase::startAccepting(){
         // handle incoming clients
         handle_incoming_streams_task = std::move(std::thread([&]() {
             handleIncomingStreams();
         }));
     }
-
     void ListenerBase::handleIncomingStreams() {
-        while (true) {
-            // use poll to find out if there are any waiting clients
-            std::array<pollfd, 2> poll_fds = {{{.fd = listener_socket_fd.load(), .events = POLLIN, .revents = 0},
-                                               {.fd = listener_end_fd, .events = POLLIN, .revents = 0}}};
-            if (poll(poll_fds.data(), poll_fds.size(), -1) == -1) {
-                // error while polling
-                continue;
-            } else if (poll_fds[0].revents != 0) {
-                // new client
-                int connecting_fd;
-                struct sockaddr incoming_stream_addr;
-                socklen_t incoming_stream_addr_length;
-                if ((connecting_fd = accept(listener_socket_fd.load(), &incoming_stream_addr,
-                                            &incoming_stream_addr_length)) < 0) {
-                    // failed to accept a client should be ignored, as it is not an error within the ecs, TODO: only log it
-                } else {
-                    // accepted new client
-                    onIncomingStream(Stream(connecting_fd));
+        try {
+            while (true) {
+                // use poll to find out if there are any waiting clients
+                std::array<pollfd, 2> poll_fds = {{{.fd = listener_socket_fd.load(), .events = POLLIN, .revents = 0},
+                                                   {.fd = listener_end_fd, .events = POLLIN, .revents = 0}}};
+                if (poll(poll_fds.data(), poll_fds.size(), -1) == -1) {
+                    // error while polling
+                    continue;
+                } else if (poll_fds[0].revents != 0) {
+                    // new client
+                    int connecting_fd;
+                    struct sockaddr incoming_stream_addr;
+                    socklen_t incoming_stream_addr_length;
+                    if ((connecting_fd = accept(listener_socket_fd.load(), &incoming_stream_addr,
+                                                &incoming_stream_addr_length)) < 0) {
+                        // failed to accept a client should be ignored, as it is not an error within the ecs, TODO: only log it
+                    } else {
+                        // accepted new client
+                        try {
+                            onIncomingStream(Stream(connecting_fd));
+                        } catch (const std::exception &e) {
+                            std::cout << "Listener: exception onIncomingStream " << + e.what() << " was thrown " << std::endl;
+                        }
+                    }
+                } else if (poll_fds[1].revents != 0) {
+                    return; // Listener termination request
                 }
-            } else if (poll_fds[1].revents != 0) {
-                return; // Listener termination request
             }
+        }catch(std::exception ex){
+            std::cout << "Listener: exception " << + ex.what() << " was thrown " << std::endl;
         }
         std::cout << "exited handler" << std::endl;
     }
@@ -93,12 +99,12 @@ namespace socket_wrapper {
     }
 
     void ListenerBase::stopAccepting() {
-        if (!stopped_accepting.load()) {
+        if(!stopped_accepting.load()){
             uint64_t semaphore_value = std::numeric_limits<uint16_t>::max();
             write(listener_end_fd, &semaphore_value, sizeof(semaphore_value));
-            if (handle_incoming_streams_task.joinable()) {
-                handle_incoming_streams_task.join();
-            }
+           if(handle_incoming_streams_task.joinable()){
+               handle_incoming_streams_task.join();
+           }
             ::close(listener_socket_fd.load());
 
             stopped_accepting.store(true);

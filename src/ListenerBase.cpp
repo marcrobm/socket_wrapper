@@ -70,7 +70,7 @@ namespace socket_wrapper {
                     // new client
                     int connecting_fd;
                     struct sockaddr incoming_stream_addr;
-                    socklen_t incoming_stream_addr_length;
+                    socklen_t incoming_stream_addr_length = sizeof(sockaddr);
                     if ((connecting_fd = accept(listener_socket_fd.load(), &incoming_stream_addr,
                                                 &incoming_stream_addr_length)) < 0) {
                         // failed to accept a client should be ignored, as it is not an error within the ecs, TODO: only log it

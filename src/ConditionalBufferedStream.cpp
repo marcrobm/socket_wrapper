@@ -42,7 +42,7 @@ namespace socket_wrapper {
                 }
                 // trigger the event, by writing the number of bytes in the buffer are returned
                 uint64_t semaphore_post = 1;
-                if (write(event_handler.fd, &semaphore_post, sizeof(semaphore_post)) < 0) {
+                if (::write(event_handler.fd, &semaphore_post, sizeof(semaphore_post)) < 0) {
                     throw SocketException(SocketException::SOCKET_WRITE, errno);
                 }
                 // ensure that signals can be triggered multiple times per ::read
@@ -105,6 +105,10 @@ namespace socket_wrapper {
             ::read(condition_fd, &condition_response, sizeof(condition_response));
         }
         return read(condition_fd);
+    }
+
+    void ConditionalBufferedStream::write(std::vector<char> data) {
+        stream.write(data.data(),data.size());
     }
 
 }

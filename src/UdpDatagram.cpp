@@ -5,7 +5,6 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include "socket_wrapper/UdpDatagram.h"
-
 namespace socket_wrapper {
 
     UdpDatagram::UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port,
@@ -26,6 +25,7 @@ namespace socket_wrapper {
             if (::bind(socket_fd, (struct sockaddr *) &receiver_address, sizeof(receiver_address)) < 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
             }
+
         }
         buffer = std::vector<char>(buffer_size);
         stop_all_operations_event_fd.store(eventfd(0, EFD_SEMAPHORE));
@@ -122,5 +122,20 @@ namespace socket_wrapper {
     void UdpDatagram::stopReads() {
         uint64_t semaphore_value = std::numeric_limits<uint16_t>::max();
         ::write(stop_all_operations_event_fd, &semaphore_value, sizeof(semaphore_value));
+    }
+
+    void UdpDatagram::subscribeToMulticast(const std::string &group_addr) {
+        // use setsockopt() to join a multicast group
+        uint32_t addr_prefix = ntohl(inet_addr(group_addr.c_str()));
+        if( addr_prefix >= ntohl(inet_addr("224.0.0.0")) && addr_prefix < ntohl(inet_addr("240.0.0.0"))) {
+            struct ip_mreq mreq;
+            mreq.imr_multiaddr.s_addr = inet_addr(group_addr.c_str());
+            mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+            if (setsockopt(socket_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq, sizeof(mreq)) < 0) {
+                throw SocketException(SocketException::SOCKET_BIND, errno);
+            }
+        }else{
+            throw SocketException(SocketException::SOCKET_JOIN_MULTICAST, errno);
+        }
     }
 }

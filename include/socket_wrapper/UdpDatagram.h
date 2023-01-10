@@ -11,13 +11,13 @@
 
 namespace socket_wrapper {
 /**
- * @brief A wrapper class for sockets of Type SOCK_DGRAM
+ * @brief A wrapper class for Multicast Udp Datagrams
  */
     class UdpDatagram {
     public:
         UdpDatagram() = delete;
         UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port, IP_VERSION version, int buffer_size = 65536);
-
+        void subscribeToMulticast(const std::string& group_addr);
         std::vector<char> read(int timeout_ms = -1);
         void write(const std::vector<char> &msg_data, const std::string &destination_ip, int port);
 

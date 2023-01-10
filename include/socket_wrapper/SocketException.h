@@ -24,6 +24,7 @@ namespace socket_wrapper {
             SOCKET_READ_TIMEOUT,
             SOCKET_POLL,
             SOCKET_RECEIVE_BUFFER_TOO_SMALL,
+            SOCKET_JOIN_MULTICAST
         };
 
         explicit SocketException(Type t, int c_error = -1, ssize_t processed_bytes = -1);

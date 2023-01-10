@@ -21,6 +21,7 @@ namespace socket_wrapper {
             {SocketException::Type::SOCKET_READ_TIMEOUT,             "SOCKET_READ_TIMEOUT"},
             {SocketException::Type::SOCKET_POLL,                     "SOCKET_POLL"},
             {SocketException::Type::SOCKET_RECEIVE_BUFFER_TOO_SMALL, "SOCKET_RECEIVE_BUFFER_TOO_SMALL"},
+            {SocketException::Type::SOCKET_JOIN_MULTICAST,           "SOCKET_JOIN_MULTICAST"}
     };
 
     const char *SocketException::what() const noexcept {

@@ -59,7 +59,15 @@ TEST(Datagram, SendthenRead) {
     auto received_packet = conn.read(100);
     ASSERT_EQ(received_packet, sent_packet);
 }
-
+TEST(Datagram, Multicast) {
+    auto conn = socket_wrapper::UdpDatagram("0.0.0.0", 8001, TEST_IP_VERSION);
+    conn.subscribeToMulticast("224.1.2.3");
+    std::string message = "SomeTestString";
+    auto sent_packet = std::vector<char>(message.begin(), message.end());
+    conn.write(sent_packet, "224.1.2.3", 8001);
+    auto received_packet = conn.read(100);
+    ASSERT_EQ(received_packet, sent_packet);
+}
 TEST(Utils, GetLocalIpAddresses) {
     auto interfaces = socket_wrapper::getLocalNetworkInterfaces(socket_wrapper::IPv4);
     auto interfacesV6 = socket_wrapper::getLocalNetworkInterfaces(socket_wrapper::IPv6);

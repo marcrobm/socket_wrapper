@@ -44,7 +44,7 @@ namespace socket_wrapper {
             // hacky way to roughly compare netmasks
             auto a_netmask = std::regex_replace(a.netmask, invalid_chars, "x");
             auto b_netmask = std::regex_replace(b.netmask, invalid_chars, "x");
-            // ordering: ip should not be localhost,   then prefer more specific netmasks
+            // ordering: ip should not be localhost, then prefer more specific netmasks
             return b.ip_address == "::1" || b.ip_address == "127.0.0.1" || (a_netmask.length() > b_netmask.length());
         });
         return interfaces.front();

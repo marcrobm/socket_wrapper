@@ -35,9 +35,7 @@ namespace socket_wrapper {
     }
 
     UdpDatagram &UdpDatagram::operator=(UdpDatagram &&stream_to_assign) noexcept {
-        std::lock_guard<std::recursive_mutex> other_sock_lock(stream_to_assign.socket_mutex);
-        std::lock_guard<std::recursive_mutex> own_sock_lock(socket_mutex);
-        socket_fd = stream_to_assign.socket_fd;
+        socket_fd = stream_to_assign.socket_fd.load();
         stream_to_assign.socket_fd = kInvalidSocketFdMarker;
         stop_all_operations_event_fd.store(stream_to_assign.stop_all_operations_event_fd.load());
         return *this;
@@ -46,9 +44,7 @@ namespace socket_wrapper {
 
     UdpDatagram::UdpDatagram(UdpDatagram &&src) noexcept {
         {
-            std::lock_guard<std::recursive_mutex> other_sock_lock(src.socket_mutex);
-            std::lock_guard<std::recursive_mutex> own_sock_lock(socket_mutex);
-            socket_fd = src.socket_fd;
+            socket_fd = src.socket_fd.load();
             src.socket_fd = kInvalidSocketFdMarker;
         }
         stop_all_operations_event_fd.store(src.stop_all_operations_event_fd.load());
@@ -69,7 +65,6 @@ namespace socket_wrapper {
     }
 
     std::vector<char> UdpDatagram::read(int timeout_ms) {
-        std::lock_guard<std::recursive_mutex> lk(socket_mutex);
         std::array<pollfd, 2> poll_fds = {{{.fd = socket_fd, .events = POLLIN, .revents = 0},
                                            {.fd = stop_all_operations_event_fd, .events = POLLIN, .revents = 0}}};
         if (poll(poll_fds.data(), poll_fds.size(), timeout_ms) == timeout_ms) {
@@ -110,7 +105,6 @@ namespace socket_wrapper {
 
 
     void UdpDatagram::write(const std::vector<char> &msg_data, const std::string &destination_ip, int port) {
-        std::lock_guard<std::recursive_mutex> lk(socket_mutex);
         if (ip_version == IP_VERSION::IPv6) {
             throw std::logic_error("IPv6 is not supported as of now");
         } else {

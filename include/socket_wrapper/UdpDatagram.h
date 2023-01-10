@@ -29,7 +29,7 @@ namespace socket_wrapper {
         ~UdpDatagram() noexcept;
     private:
         std::vector<char> buffer;
-        int socket_fd;
+        std::atomic<int> socket_fd;
         IP_VERSION ip_version;
         std::atomic<int> stop_all_operations_event_fd{};
         std::recursive_mutex socket_mutex;

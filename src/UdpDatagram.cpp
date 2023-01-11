@@ -130,7 +130,8 @@ namespace socket_wrapper {
         if( addr_prefix >= ntohl(inet_addr("224.0.0.0")) && addr_prefix < ntohl(inet_addr("240.0.0.0"))) {
             struct ip_mreq mreq;
             mreq.imr_multiaddr.s_addr = inet_addr(group_addr.c_str());
-            mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+            mreq.imr_interface.s_addr = htonl(INADDR_ANY);            int one = 1;
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
             if (setsockopt(socket_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq, sizeof(mreq)) < 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
             }

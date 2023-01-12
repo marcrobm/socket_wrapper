@@ -95,10 +95,10 @@ namespace socket_wrapper {
         return newline_condition;
     }
 
-    std::vector<char> ConditionalBufferedStream::readBlocking(int condition_fd) {
+    std::vector<char> ConditionalBufferedStream::readBlocking(int condition_fd, int timeout_ms) {
         uint64_t condition_response;
         std::array<pollfd, 1> poll_fds = {{{.fd = condition_fd, .events = POLLIN, .revents = 0}}};
-        const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), -1);
+        const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), timeout_ms);
         if (poll_result == 0) {
             throw SocketException(SocketException::SOCKET_POLL,errno);
         }else{

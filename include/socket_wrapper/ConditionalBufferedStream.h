@@ -57,7 +57,7 @@ namespace socket_wrapper {
          * @param condition_fd
          * @return
          */
-        std::vector<char> readBlocking(int condition_fd);
+        std::vector<char> readBlocking(int condition_fd, int timeout_ms = -1);
 
         static buffer_event_condition getDelimiterCondition(char c);
 

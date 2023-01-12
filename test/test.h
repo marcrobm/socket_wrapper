@@ -27,5 +27,7 @@
     ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
 #define ASSERT_READ_BLOCKING_EQ(stream, fd, expected) {auto current_buffer = stream->readBlocking(fd); \
     ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
+#define ASSERT_READ_NON_BLOCKING_EQ(stream, fd, expected) {auto current_buffer = stream->read(fd); \
+    ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
 
 #endif //RT_CONTROLLER_TEST_MAIN_H

@@ -41,7 +41,17 @@ namespace socket_wrapper {
          * @return the data segment read
          */
         std::vector<char> read(int condition_fd);
-       void write(std::vector<char> data);
+        /**
+         * writes the characters of a string to the stream
+         * @param data
+         */
+        void write(std::string data);
+        /**
+         * writes data to the stream
+         * @param data the data to write
+         */
+        void write(std::vector<char> data);
+
         /**
          * performs a blocking read
          * @param condition_fd

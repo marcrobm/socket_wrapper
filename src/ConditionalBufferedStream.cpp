@@ -110,5 +110,8 @@ namespace socket_wrapper {
     void ConditionalBufferedStream::write(std::vector<char> data) {
         stream.write(data.data(),data.size());
     }
+    void ConditionalBufferedStream::write(std::string data) {
+        write(std::vector<char>(begin(data), end(data)));
+    }
 
 }

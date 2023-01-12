@@ -1,5 +1,5 @@
-#ifndef EZNETWORK_STREAM_H
-#define EZNETWORK_STREAM_H
+#ifndef SOCKET_WRAPPER_STREAM_H
+#define SOCKET_WRAPPER_STREAM_H
 
 #include <cstddef>
 #include <mutex>

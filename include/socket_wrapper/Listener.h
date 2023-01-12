@@ -1,5 +1,5 @@
-#ifndef EZNETWORK_LISTENER_H
-#define EZNETWORK_LISTENER_H
+#ifndef SOCKET_WRAPPER_LISTENER_H
+#define SOCKET_WRAPPER_LISTENER_H
 
 #include <functional>
 #include <thread>

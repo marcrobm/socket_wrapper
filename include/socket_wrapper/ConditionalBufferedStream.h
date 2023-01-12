@@ -1,3 +1,5 @@
+#ifndef SOCKET_WRAPPER_CONDITIONAL_BUFFERED_STREAM_H
+#define SOCKET_WRAPPER_CONDITIONAL_BUFFERED_STREAM_H
 #include "socket_wrapper/BufferedStream.h"
 #include <functional>
 
@@ -88,3 +90,4 @@ namespace socket_wrapper {
         void processDataSendSignals(const std::vector<char> &data);
     };
 }
+#endif

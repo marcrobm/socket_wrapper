@@ -27,6 +27,8 @@
     ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
 #define ASSERT_READ_BLOCKING_EQ(stream, fd, expected) {auto current_buffer = stream->readBlocking(fd); \
     ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
+#define ASSERT_READ_BLOCKING_STR_EQ(stream, fd, expected) {auto str = stream->readBlockingStr(fd); \
+    ASSERT_EQ(str,expected);}
 #define ASSERT_READ_NON_BLOCKING_EQ(stream, fd, expected) {auto current_buffer = stream->read(fd); \
     ASSERT_EQ(std::string(current_buffer.begin(), current_buffer.end()),expected);}
 

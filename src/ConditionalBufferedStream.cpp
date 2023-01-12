@@ -94,7 +94,10 @@ namespace socket_wrapper {
         };
         return newline_condition;
     }
-
+    std::string ConditionalBufferedStream::readBlockingStr(int condition_fd, int timeout_ms) {
+        auto read = readBlocking(condition_fd, timeout_ms);
+        return {begin(read), end(read)};
+    }
     std::vector<char> ConditionalBufferedStream::readBlocking(int condition_fd, int timeout_ms) {
         uint64_t condition_response;
         std::array<pollfd, 1> poll_fds = {{{.fd = condition_fd, .events = POLLIN, .revents = 0}}};

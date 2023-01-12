@@ -49,6 +49,7 @@ TEST(ConditionalBufferedStream, ReadBlocking) {
     ASSERT_READ_BLOCKING_EQ(cstream, on_newline_fd, "xyz\n");
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
 }
+
 TEST(ConditionalBufferedStream, ReadNonBlocking) {
     using namespace socket_wrapper;
     auto streams = StreamFactory::CreatePipe();
@@ -64,6 +65,16 @@ TEST(ConditionalBufferedStream, ReadNonBlocking) {
     ASSERT_POLL_GOT_EVENT(on_newline_fd);
     ASSERT_READ_NON_BLOCKING_EQ(cstream, on_newline_fd, "xyz\n");
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
+}
+
+TEST(ConditionalBufferedStream, ReadNonBlockingTimeout) {
+    using namespace socket_wrapper;
+    auto streams = StreamFactory::CreatePipe();
+    auto cstream = std::make_shared<ConditionalBufferedStream>(std::move(BufferedStream(std::move(streams[1]), 512)));
+    auto newline_condition = ConditionalBufferedStream::getDelimiterCondition('\n');
+    int on_newline_fd = cstream->createEventfdOnCondition(newline_condition);
+    cstream->start();
+    ASSERT_ANY_THROW(cstream->readBlocking(on_newline_fd, 1));
 }
 
 

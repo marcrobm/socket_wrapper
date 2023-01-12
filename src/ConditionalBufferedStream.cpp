@@ -101,8 +101,10 @@ namespace socket_wrapper {
         const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), timeout_ms);
         if (poll_result == 0) {
             throw SocketException(SocketException::SOCKET_POLL,errno);
-        }else{
+        }else if (poll_fds[0].revents & POLLIN) {
             ::read(condition_fd, &condition_response, sizeof(condition_response));
+        }else{
+            throw SocketException(SocketException::SOCKET_READ_TIMEOUT,errno);
         }
         return read(condition_fd);
     }

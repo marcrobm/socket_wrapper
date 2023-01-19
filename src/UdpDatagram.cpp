@@ -16,6 +16,9 @@ namespace socket_wrapper {
             if ((socket_fd = socket(AF_INET, SOCK_DGRAM | SO_REUSEADDR, IPPROTO_UDP)) < 0) {
                 throw SocketException(SocketException::SOCKET_SOCKET, errno);
             }
+            int one = 1;
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(int));
             bzero(&receiver_address, sizeof(receiver_address));
             // assign IP, PORT
             receiver_address.sin_family = AF_INET;

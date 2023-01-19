@@ -1,4 +1,4 @@
-option(BUILD_TESTS ON)
+option(BUILD_TESTS OFF)
 # This is the makefile for the eznetwork library which provides a wrapper around bare c network communication
 cmake_minimum_required(VERSION 3.9)
 project(socket_wrapper

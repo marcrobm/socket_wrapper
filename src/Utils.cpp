@@ -23,7 +23,7 @@ namespace socket_wrapper {
         getifaddrs(&ifAddresses);
         struct ifaddrs *ifAddressesIterator = ifAddresses;
         while (ifAddressesIterator != nullptr) {
-            if (ifAddressesIterator->ifa_addr->sa_family == (version==IPv4?AF_INET:AF_INET6)) {
+            if (ifAddressesIterator->ifa_addr && ifAddressesIterator->ifa_addr->sa_family == (version==IPv4?AF_INET:AF_INET6)) {
                 NetworkInterface found_interface = {
                         .name = ifAddressesIterator->ifa_name,
                         .ip_address = getIpAddressOf(ifAddressesIterator->ifa_addr),

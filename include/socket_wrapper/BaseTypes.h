@@ -21,6 +21,7 @@ namespace socket_wrapper{
     class Stream;
     class StreamFactory;
     class ListenerBase;
+    class Listener;
     class ConditionalBufferedStream;
 }
 

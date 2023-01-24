@@ -1,4 +1,4 @@
-option(BUILD_TESTS OFF)
+SET(BUILD_TESTS ON CACHE BOOL "Build tests")
 # This is the makefile for the eznetwork library which provides a wrapper around bare c network communication
 cmake_minimum_required(VERSION 3.9)
 project(socket_wrapper
@@ -12,7 +12,7 @@ add_library(socket_wrapper STATIC
         src/BufferedStream.cpp
         src/SocketException.cpp
         src/StreamFactory.cpp
-        src/ListenerBase.cpp
+        src/Listener.cpp
         src/BaseTypes.cpp
         src/ConditionalBufferedStream.cpp
         src/UdpDatagram.cpp
@@ -32,14 +32,17 @@ install(FILES
 
 ############################## google test ########################################################
 if(BUILD_TESTS)
-include(FetchContent)
-FetchContent_Declare(googletest
+    message("building tests")
+    include(FetchContent)
+    FetchContent_Declare(googletest
         GIT_REPOSITORY "https://github.com/google/googletest"
         GIT_PROGRESS TRUE
         GIT_SHALLOW TRUE
         GIT_TAG release-1.8.0
         DOWNLOAD_EXTRACT_TIMESTAMP true)
-FetchContent_MakeAvailable(googletest)
-enable_testing()
-add_subdirectory(test)
+    FetchContent_MakeAvailable(googletest)
+    enable_testing()
+    add_subdirectory(test)
+else()
+    message("not building tests")
 endif()

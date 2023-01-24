@@ -15,6 +15,7 @@ namespace socket_wrapper {
     class Stream {
         friend StreamFactory;
         friend ListenerBase;
+        friend Listener;
     public:
         /**
          * a Stream should not be created without an underlying socket

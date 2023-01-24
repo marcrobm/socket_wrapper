@@ -111,6 +111,22 @@ TEST(ConditionalBufferedStream, ReadMixtureOfTypes) {
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
 }
 
+
+TEST(Listener, ConnectDirectly){
+    using namespace socket_wrapper;
+    Listener A = Listener(8234,TEST_IP_VERSION);
+    auto connecting_client = std::jthread([&](){
+        auto stream = StreamFactory::CreateTcpStreamToServer("127.0.0.1", 8234, TEST_IP_VERSION);
+        stream.write("abc", 3, 1);
+        this_thread::sleep_for(500ms);
+    });
+    auto new_client_connection = A.accept(500);
+    std::vector<char> buffer(64);
+    new_client_connection.read(buffer.data(), 3, 1);
+    ASSERT_EQ(buffer[0], 'a');
+}
+
+
 TEST(Datagram, SendthenRead) {
     auto conn = socket_wrapper::UdpDatagram("127.0.0.0", 8001, TEST_IP_VERSION);
     std::string message = "SomeTestString";
@@ -157,3 +173,5 @@ TEST(Utils, GetLocalIpAddresses) {
     cout << "most likely primary IPv4 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv4).ip_address << endl;
     cout << "most likely primary IPv6 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv6).ip_address << endl;
 }
+
+

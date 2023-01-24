@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include "socket_wrapper/Listener.h"
 #include "socket_wrapper/SocketException.h"
+#include "unistd.h"
 
 namespace socket_wrapper {
 

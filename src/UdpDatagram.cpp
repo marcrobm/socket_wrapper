@@ -5,6 +5,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include "socket_wrapper/UdpDatagram.h"
+#include "unistd.h"
 namespace socket_wrapper {
 
     UdpDatagram::UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port,

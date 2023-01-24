@@ -4,6 +4,7 @@
 #include <sys/poll.h>
 #include "socket_wrapper/ConditionalBufferedStream.h"
 #include "socket_wrapper/SocketException.h"
+#include "unistd.h"
 
 namespace socket_wrapper {
 

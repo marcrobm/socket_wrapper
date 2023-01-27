@@ -1,6 +1,7 @@
 #ifndef SOCKET_WRAPPER_CONDITIONAL_BUFFERED_STREAM_H
 #define SOCKET_WRAPPER_CONDITIONAL_BUFFERED_STREAM_H
 #include "socket_wrapper/BufferedStream.h"
+#include "SocketException.h"
 #include <functional>
 
 namespace socket_wrapper {
@@ -69,6 +70,7 @@ namespace socket_wrapper {
         static buffer_event_condition getDelimiterCondition(char c);
 
     private:
+        SocketException::Type last_ex = SocketException::SOCKET_TERMINATION_REQUEST;
         std::thread worker;
         BufferedStream stream;
 

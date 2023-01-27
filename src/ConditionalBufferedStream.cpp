@@ -21,9 +21,9 @@ namespace socket_wrapper {
                                                                  stream.buffer_write_offset);
                 processDataSendSignals(data);
             }
-        } catch (SocketException ex) {
+        } catch (SocketException& ex) {
             if (ex.exception_type != SocketException::SOCKET_TERMINATION_REQUEST) {
-                throw ex;
+                last_ex = ex.exception_type;
             }
         }
     }

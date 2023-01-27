@@ -35,6 +35,9 @@ namespace socket_wrapper {
         std::lock_guard<std::recursive_mutex> lk(buffer_event_handlers_mtx);
         for (auto event_handler: buffer_event_handlers) {
             int bytes_read_by_condition = event_handler.condition(data);
+            if(bytes_read_by_condition > data.size()){
+                throw std::logic_error("a condition on a ConditionalBufferedStream tried to read more data, than exists");
+            }
             if (bytes_read_by_condition > 0) {
                 {
                     std::lock_guard<std::recursive_mutex> lk(received_data_per_condition_mtx);

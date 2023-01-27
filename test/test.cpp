@@ -120,6 +120,28 @@ TEST(ConditionalBufferedStream, ReadNonBlockingTimeout) {
     cstream->start();
     ASSERT_ANY_THROW(cstream->readBlocking(on_newline_fd, 1));
 }
+
+TEST(ConditionalBufferedStream, ThrowExceptionIfClosed) {
+    using namespace socket_wrapper;
+    std::shared_ptr<ConditionalBufferedStream> cstream;
+    std::shared_ptr<Stream> istream;
+    {
+        auto streams = StreamFactory::CreatePipe();
+        cstream = std::make_shared<ConditionalBufferedStream>(
+                std::move(BufferedStream(std::move(streams[1]), 512)));
+        istream = std::make_shared<Stream>(std::move(streams[0]));
+    }
+
+    auto newline_condition = ConditionalBufferedStream::getDelimiterCondition('\n');
+    int on_newline_fd = cstream->createEventfdOnCondition(newline_condition);
+    cstream->start();
+    istream->write("abc\n", 8, 1);
+    ASSERT_READ_BLOCKING_STR_EQ(cstream, on_newline_fd, "abc\n");
+    istream = nullptr;// delete stream to close it
+    ASSERT_ANY_THROW(cstream->readBlocking(on_newline_fd, 1));
+}
+
+
 TEST(ConditionalBufferedStream, ReadMixtureOfTypes) {
     using namespace socket_wrapper;
     auto streams = StreamFactory::CreatePipe();

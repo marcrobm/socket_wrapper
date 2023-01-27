@@ -9,6 +9,7 @@ namespace socket_wrapper {
     class SocketException : public std::exception {
     public:
         enum Type : uint8_t {
+            SOCKET_OK,
             SOCKET_SOCKET,
             SOCKET_BIND,
             SOCKET_LISTEN,

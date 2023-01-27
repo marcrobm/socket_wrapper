@@ -24,6 +24,14 @@ namespace socket_wrapper {
         } catch (SocketException& ex) {
             if (ex.exception_type != SocketException::SOCKET_TERMINATION_REQUEST) {
                 last_ex = ex.exception_type;
+                std::lock_guard<std::recursive_mutex> lk(buffer_event_handlers_mtx);
+                // Notify event handlers that the socket is no longer good
+                for(auto x : buffer_event_handlers){
+                    uint64_t semaphore_post = 1;
+                    if (::write(x.fd, &semaphore_post, sizeof(semaphore_post)) < 0) {
+                        throw SocketException(SocketException::SOCKET_WRITE, errno);
+                    }
+                }
             }
         }
     }
@@ -89,6 +97,8 @@ namespace socket_wrapper {
             std::vector<char> data = received_data_per_condition[condition_fd].front();
             received_data_per_condition[condition_fd].pop_front();
             return data;
+        }if(last_ex != SocketException::SOCKET_OK){
+            throw SocketException(last_ex);
         } else {
             throw std::out_of_range("A read on condition " + std::to_string(condition_fd) +
                                     " was performed, but there is no data present yet");
@@ -108,7 +118,10 @@ namespace socket_wrapper {
     }
     std::vector<char> ConditionalBufferedStream::readBlocking(int condition_fd, int timeout_ms) {
         uint64_t condition_response;
-        std::array<pollfd, 1> poll_fds = {{{.fd = condition_fd, .events = POLLIN, .revents = 0}}};
+        // Here we poll for either the condition or termination
+        std::array<pollfd, 1> poll_fds = {
+                {{.fd = condition_fd, .events = POLLIN, .revents = 0}},
+        };
         const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), timeout_ms);
         if (poll_result == 0) {
             throw SocketException(SocketException::SOCKET_POLL,errno);

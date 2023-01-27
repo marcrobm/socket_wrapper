@@ -6,6 +6,7 @@
 
 namespace socket_wrapper {
     const std::map<SocketException::Type, std::string> SocketException::SocketExceptionTypeName = {
+            {SocketException::Type::SOCKET_OK,                       "SOCKET_OK"},
             {SocketException::Type::SOCKET_SOCKET,                   "SOCKET_SOCKET"},
             {SocketException::Type::SOCKET_BIND,                     "SOCKET_BIND"},
             {SocketException::Type::SOCKET_LISTEN,                   "SOCKET_LISTEN"},

@@ -71,7 +71,7 @@ namespace socket_wrapper {
         static buffer_event_condition getDelimiterCondition(char c);
 
     private:
-        SocketException::Type last_ex = SocketException::SOCKET_TERMINATION_REQUEST;
+        SocketException::Type last_ex = SocketException::SOCKET_OK;
         std::thread worker;
         BufferedStream stream;
 

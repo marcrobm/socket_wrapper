@@ -71,6 +71,7 @@ namespace socket_wrapper {
          * closes the underlying socket
          */
         ~Listener() noexcept;
+        int getFdForPoll();
     private:
         std::atomic<int> listener_socket_fd;
         std::atomic<int> listener_end_fd;

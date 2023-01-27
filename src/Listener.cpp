@@ -217,4 +217,8 @@ namespace socket_wrapper {
     Listener::~Listener() noexcept {
         stopAccepting();
     }
+
+    int Listener::getFdForPoll() {
+        return listener_socket_fd;
+    }
 }

@@ -19,7 +19,9 @@ namespace socket_wrapper {
             }
             int one = 1;
             setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+#ifdef SO_REUSEPORT
             setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(int));
+#endif
             bzero(&receiver_address, sizeof(receiver_address));
             // assign IP, PORT
             receiver_address.sin_family = AF_INET;

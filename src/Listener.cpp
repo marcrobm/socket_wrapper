@@ -34,9 +34,11 @@ namespace socket_wrapper {
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#ifdef SO_REUSEPORT
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#endif
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
@@ -51,9 +53,11 @@ namespace socket_wrapper {
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#ifdef SO_REUSEPORT
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#endif
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
@@ -174,9 +178,11 @@ namespace socket_wrapper {
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#ifdef SO_REUSEPORT
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#endif
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
@@ -191,9 +197,11 @@ namespace socket_wrapper {
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#ifdef SO_REUSEPORT
             if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
+#endif
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);

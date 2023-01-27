@@ -91,7 +91,7 @@ namespace socket_wrapper {
     std::vector<char> ConditionalBufferedStream::read(int condition_fd) {
         std::lock_guard<std::recursive_mutex> lk(received_data_per_condition_mtx);
         if (received_data_per_condition.find(condition_fd) == end(received_data_per_condition)) {
-            throw std::out_of_range("The condition_fd does not exist: " + std::to_string(condition_fd));
+            throw SocketException(SocketException::SOCKET_INVALID_CONDITION);
         }
         if (!received_data_per_condition[condition_fd].empty()) {
             std::vector<char> data = received_data_per_condition[condition_fd].front();

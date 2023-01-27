@@ -44,7 +44,8 @@ namespace socket_wrapper {
     std::vector<char> BufferedStream::PopFromBuffer(size_t bytes_to_read) {
         std::lock_guard<std::recursive_mutex> lk(buffer_lock);
         if(bytes_to_read>buffer_write_offset){
-            throw std::out_of_range("the buffer does not contain enough data yet");
+            throw std::out_of_range(std::string("the buffer does not contain enough data yet, should read ")+
+            std::to_string(bytes_to_read) + "can read" + std::to_string(buffer_write_offset) );
         }
         auto result = std::vector<char>(stream_buffer, stream_buffer + bytes_to_read);
         buffer_write_offset -= result.size();

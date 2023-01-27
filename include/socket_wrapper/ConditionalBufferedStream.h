@@ -7,6 +7,7 @@
 namespace socket_wrapper {
     /**
      * a buffer event condition, should return 0 in case of no action, otherwise the number of bytes to later be read should be returned
+     * if the number is negative, the condition is not triggered, but the bytes are still removed from the buffer and discarded
      */
     using buffer_event_condition = std::function<int(const std::vector<char> &)>;
 

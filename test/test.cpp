@@ -81,7 +81,36 @@ TEST(ConditionalBufferedStream, ReadNonBlockingStr) {
     ASSERT_READ_NON_BLOCKING_EQ(cstream, on_newline_fd, "xyz\n");
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
 }
+TEST(ConditionalBufferedStream, DiscardData) {
+    using namespace socket_wrapper;
+    auto streams = StreamFactory::CreatePipe();
+    auto cstream = std::make_shared<ConditionalBufferedStream>(std::move(BufferedStream(std::move(streams[1]), 512)));
+    // In a stream like asdaA123cvBasd we want to always capture stuff between A and B
+    int fancy_fd = cstream->createEventfdOnCondition([](const std::vector<char>& data){
+        auto end_marker = std::find(data.begin(), data.end(), 'Z');
+        if(end_marker == data.end()){
+            return 0;//not enough data
+        }
+        if(data.at(0) == 'A'){
+            return (int)std::distance(std::begin(data),end_marker);// take everything till B
+        }else{
+            //discard everything till next A
+            auto next_start_marker = std::find(data.begin(), data.end(), 'A');
+            if(next_start_marker == data.end()){
+                return (int)(-data.size());//discard everything
+            }else{
+                return (int)(-std::distance(std::begin(data),next_start_marker));
+            }
+        }
+    });
+    cstream->start();
 
+    streams[0].write("abc\nAyzxZbdfAAZ\n", 16, 1);
+    ASSERT_READ_BLOCKING_STR_EQ(cstream, fancy_fd, "Ayzx");
+    ASSERT_POLL_GOT_EVENT(fancy_fd);
+    ASSERT_READ_NON_BLOCKING_EQ(cstream, fancy_fd, "AA");
+    ASSERT_POLL_TIMED_OUT(fancy_fd);
+}
 TEST(ConditionalBufferedStream, ReadNonBlockingTimeout) {
     using namespace socket_wrapper;
     auto streams = StreamFactory::CreatePipe();

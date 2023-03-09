@@ -162,6 +162,28 @@ TEST(ConditionalBufferedStream, ReadMixtureOfTypes) {
     ASSERT_POLL_TIMED_OUT(on_newline_fd);
 }
 
+TEST(ConditionalBufferedStream, AbortReads) {
+    using namespace socket_wrapper;
+    auto streams = StreamFactory::CreatePipe();
+    auto cstream = std::make_shared<ConditionalBufferedStream>(std::move(BufferedStream(std::move(streams[1]), 512)));
+
+    auto newline_condition = ConditionalBufferedStream::getDelimiterCondition('\n');
+    int on_newline_fd = cstream->createEventfdOnCondition(newline_condition);
+    cstream->start();
+    auto t = std::thread([&](){
+       try{
+           cstream->readBlocking(on_newline_fd, 1000);
+           FAIL() << "readBlocking should have thrown exception";
+       }catch (SocketException& e){
+          ASSERT_EQ(SocketException::SocketExceptionTypeName.at(e.exception_type),
+                    SocketException::SocketExceptionTypeName.at(SocketException::Type::SOCKET_TERMINATION_REQUEST));
+       }
+    });
+    this_thread::sleep_for(500ms);
+    cstream->stopReads();
+    t.join();
+}
+
 
 TEST(Listener, ConnectDirectly){
     using namespace socket_wrapper;

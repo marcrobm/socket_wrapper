@@ -69,12 +69,15 @@ namespace socket_wrapper {
          */
         std::string readBlockingStr(int condition_fd, int timeout_ms = -1);
         static buffer_event_condition getDelimiterCondition(char c);
-
+        /**
+         * aborts all currently running reads on the Stream
+         */
+        void stopReads();
     private:
         SocketException::Type last_ex = SocketException::SOCKET_OK;
         std::thread worker;
         BufferedStream stream;
-
+        std::atomic<bool> termination_requested{false};
         struct buffer_event_handler {
             buffer_event_condition condition;
             int fd;

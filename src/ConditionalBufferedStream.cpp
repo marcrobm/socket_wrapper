@@ -124,6 +124,9 @@ namespace socket_wrapper {
         };
         const int poll_result = ::poll(poll_fds.data(), poll_fds.size(), timeout_ms);
         if (poll_result == 0) {
+            if(termination_requested){
+                throw SocketException(SocketException::Type::SOCKET_TERMINATION_REQUEST);
+            }
             throw SocketException(SocketException::SOCKET_POLL,errno);
         }else if (poll_fds[0].revents & POLLIN) {
             ::read(condition_fd, &condition_response, sizeof(condition_response));
@@ -138,6 +141,11 @@ namespace socket_wrapper {
     }
     void ConditionalBufferedStream::write(std::string data) {
         write(std::vector<char>(begin(data), end(data)));
+    }
+
+    void ConditionalBufferedStream::stopReads() {
+        termination_requested = true;
+        stream.stopReads();
     }
 
 }

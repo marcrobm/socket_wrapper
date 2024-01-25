@@ -157,7 +157,7 @@ namespace socket_wrapper {
         throw SocketException(SocketException::SOCKET_ACCEPT, errno);
     }
 
-    Listener::Listener(int port, IP_VERSION version) {
+    Listener::Listener(int port, IP_VERSION version, bool reuse) {
         auto ip_v = (version == IP_VERSION::IPv6) ? AF_INET6 : AF_INET;
         listener_end_fd.store(eventfd(0, EFD_SEMAPHORE));
         stopped_accepting.store(false);
@@ -174,34 +174,40 @@ namespace socket_wrapper {
             servaddr.sin6_addr = in6addr_any;
             servaddr.sin6_port = htons(port);
             // reuse addr
-            int optval = 1;
-            if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-                throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
-            }
+            if(reuse) {
+                int optval = 1;
+                if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+                    throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
+                }
 #ifdef SO_REUSEPORT
-            if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
-                throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
-            }
+                if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
+                    throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
+                }
 #endif
+            }
+
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
             }
+
         } else {
             struct sockaddr_in servaddr, cli;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = ip_v;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
             servaddr.sin_port = htons(port);
-            int optval = 1;
-            if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-                throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
-            }
+            if(reuse) {
+                int optval = 1;
+                if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+                    throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
+                }
 #ifdef SO_REUSEPORT
-            if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
-                throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
-            }
+                if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
+                    throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
+                }
 #endif
+            }
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);

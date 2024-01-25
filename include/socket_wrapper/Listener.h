@@ -59,7 +59,7 @@ namespace socket_wrapper {
          * @param version The version of the ip (v4,v6) to use
          * @throws SocketException on errors
          */
-        explicit Listener(int port = 23, IP_VERSION version = socket_wrapper::IPv4);
+        explicit Listener(int port = 23, IP_VERSION version = socket_wrapper::IPv4, bool reuse = true);
         Stream accept(int timeout = -1);
 
         /**

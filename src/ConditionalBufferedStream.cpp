@@ -83,7 +83,9 @@ namespace socket_wrapper {
     ConditionalBufferedStream::~ConditionalBufferedStream() {
         for(auto x : buffer_event_handlers){::close(x.fd);}
         stream.stopReads(); // results worker thread stopping
-        worker.join();
+        if (worker.joinable()) {
+            worker.join();
+        }
     }
 
     std::vector<char> ConditionalBufferedStream::read(int condition_fd) {

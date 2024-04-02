@@ -28,9 +28,7 @@ namespace socket_wrapper {
                 // Notify event handlers that the socket is no longer good
                 for(auto x : buffer_event_handlers){
                     uint64_t semaphore_post = 1;
-                    if (::write(x.fd, &semaphore_post, sizeof(semaphore_post)) < 0) {
-                        throw SocketException(SocketException::SOCKET_WRITE, errno);
-                    }
+                    ::write(x.fd, &semaphore_post, sizeof(semaphore_post));
                 }
             }
         }

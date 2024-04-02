@@ -24,7 +24,11 @@ namespace socket_wrapper {
             {SocketException::Type::SOCKET_POLL,                     "SOCKET_POLL"},
             {SocketException::Type::SOCKET_RECEIVE_BUFFER_TOO_SMALL, "SOCKET_RECEIVE_BUFFER_TOO_SMALL"},
             {SocketException::Type::SOCKET_JOIN_MULTICAST,           "SOCKET_JOIN_MULTICAST"},
-            {SocketException::Type::SOCKET_SET_OPTION,               "SOCKET_SET_OPTION"}
+            {SocketException::Type::SOCKET_SET_OPTION,               "SOCKET_SET_OPTION"},
+            {SocketException::Type::SOCKET_SSL_CREATE,               "SOCKET_SSL_CREATE_ERROR"},
+            {SocketException::Type::SOCKET_SSL_CONNECT,               "SOCKET_SSL_CONNECT"},
+            {SocketException::Type::SOCKET_SSL_CERTIFICATE,          "SOCKET_SSL_CERTIFICATE"},
+            {SocketException::Type::SOCKET_SSL_KEY,                  "SOCKET_SSL_KEY"},
     };
 
     const char *SocketException::what() const noexcept {

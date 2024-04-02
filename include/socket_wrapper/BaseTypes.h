@@ -19,9 +19,13 @@ namespace socket_wrapper{
     extern std::map<IP_VERSION,std::string> getName;
     // some forward declarations
     class Stream;
+    class SecureStream;
     class StreamFactory;
+    class SecureStreamFactory;
     class ListenerBase;
+    class SecureListenerBase;
     class Listener;
+    class SecureListener;
     class ConditionalBufferedStream;
 }
 

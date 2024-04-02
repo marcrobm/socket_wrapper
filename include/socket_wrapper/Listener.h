@@ -9,7 +9,9 @@
 
 #include "Stream.h"
 #include "BaseTypes.h"
-
+#ifdef OPENSSL_FOUND
+#include <openssl/ssl.h>
+#endif
 namespace socket_wrapper {
 /**
  * @brief A wrapper class for accepting incoming TCP connections, following RAII principles
@@ -28,7 +30,7 @@ namespace socket_wrapper {
         /**
          * closes the underlying socket, and thread
          */
-        ~ListenerBase() noexcept;
+        virtual ~ListenerBase() noexcept;
         /**
          * should only be called once after construction is completed
          */
@@ -37,14 +39,14 @@ namespace socket_wrapper {
         * should only be called before destruction
          * after this call onIncomingStream will no longer be called
         */
-        void stopAccepting();
+        virtual void stopAccepting();
     private:
         virtual void onIncomingStream(Stream stream) = 0;
         std::thread handle_incoming_streams_task;
         std::atomic<int> listener_socket_fd;
         std::atomic<int> listener_end_fd;
         std::atomic<bool>stopped_accepting;
-        void handleIncomingStreams();
+        virtual void handleIncomingStreams();
     };
 /**
  * @brief A wrapper class for accepting incoming TCP connections, following RAII principles
@@ -60,13 +62,17 @@ namespace socket_wrapper {
          * @throws SocketException on errors
          */
         explicit Listener(int port = 23, IP_VERSION version = socket_wrapper::IPv4, bool reuse = true);
-        Stream accept(int timeout = -1);
+
+#ifdef OPENSSL_FOUND
+        explicit Listener(std::string cert_path,std::string key_path,int port = 23, IP_VERSION version = socket_wrapper::IPv4, bool reuse = true);
+#endif
+        virtual Stream accept(int timeout = -1);
 
         /**
         * should only be called before destruction
         * after this call onIncomingStream will no longer be called
         */
-        void stopAccepting();
+        virtual void stopAccepting();
         /**
          * closes the underlying socket
          */
@@ -76,6 +82,11 @@ namespace socket_wrapper {
         std::atomic<int> listener_socket_fd;
         std::atomic<int> listener_end_fd;
         std::atomic<bool>stopped_accepting;
+#ifdef OPENSSL_FOUND
+        SSL_CTX *ssl_ctx = nullptr;
+#endif
+
+        void createSocket(int port, const IP_VERSION &version, bool reuse);
     };
 }
 

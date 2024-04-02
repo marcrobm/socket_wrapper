@@ -27,7 +27,11 @@ namespace socket_wrapper {
             SOCKET_POLL,
             SOCKET_RECEIVE_BUFFER_TOO_SMALL,
             SOCKET_JOIN_MULTICAST,
-            SOCKET_SET_OPTION
+            SOCKET_SET_OPTION,
+            SOCKET_SSL_CREATE,
+            SOCKET_SSL_CONNECT,
+            SOCKET_SSL_CERTIFICATE,
+            SOCKET_SSL_KEY,
         };
 
         explicit SocketException(Type t, int c_error = -1, ssize_t processed_bytes = -1);

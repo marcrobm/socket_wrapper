@@ -22,6 +22,8 @@ namespace socket_wrapper {
         static socket_wrapper::Stream CreateTcpStreamToServer(std::string ip_address, uint16_t port, IP_VERSION version = IPv4);
 
         static std::array<Stream, 2> CreatePipe();
+
+        static Stream CreateSecureTcpStreamToServer(std::string ip_address, uint16_t port, IP_VERSION version);
     };
 }
 #endif //EZNETWORK_STREAMFACTORY_H

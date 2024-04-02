@@ -1,6 +1,7 @@
 #include "test.h"
 #include "socket_wrapper/ConditionalBufferedStream.h"
 #include "socket_wrapper/StreamFactory.h"
+#include "socket_wrapper/StreamFactory.h"
 #include "socket_wrapper/UdpDatagram.h"
 #include "socket_wrapper/BaseTypes.h"
 #include "socket_wrapper/Utils.h"
@@ -247,4 +248,33 @@ TEST(Utils, GetLocalIpAddresses) {
     cout << "most likely primary IPv6 ip:" + getInterfaceWithMostSpecificNetmask(socket_wrapper::IPv6).ip_address << endl;
 }
 
+#ifdef OPENSSL_FOUND
+TEST(SSL, EncryptedConnect){
+    using namespace socket_wrapper;
+    Listener l = Listener("cert.pem","key.pem",4433,TEST_IP_VERSION);
+    auto server = std::jthread([&](){
+        try {
+            auto c = ConditionalBufferedStream(BufferedStream(l.accept(), 1024));
+            int nl = c.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
+            c.start();
+            auto s = c.readBlockingStr(nl, 1000);
+            c.write("ECHO:" + s);
+        } catch (SocketException &e) {
+            std::cerr << "Server error:" << e.what() << std::endl;
+        }
+    });
+    try {
+        std::this_thread::sleep_for(1s);
+        auto s = ConditionalBufferedStream(
+                BufferedStream(StreamFactory::CreateSecureTcpStreamToServer("127.0.0.1", 4433, IPv4), 1024));
+        int on_newline_fd = s.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
+        s.start();
+        s.write("ABC\n");
+        std::string response = s.readBlockingStr(on_newline_fd, 1000);
+        assert(response == "ECHO:ABC\n");
+    }catch (SocketException &e){
+        std::cerr << "Client error:" << e.what() << std::endl;
+    }
 
+    }
+#endif

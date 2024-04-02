@@ -1,2 +1,3 @@
-socket_wrapper is a c++ interface to bare sockets, to easily and reliabliy handle mainly TCP streams.
+# About
+socket_wrapper is a C++ wrapper of bare sockets to quickly and reliably handle various network streams.
 The focus of this project is ease of use.

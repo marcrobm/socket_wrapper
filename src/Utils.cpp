@@ -8,6 +8,9 @@
 #include <thread>
 #include <regex>
 #include "socket_wrapper/Utils.h"
+#ifdef OPENSSL_FOUND
+    #include <openssl/ssl.h>
+#endif
 
 namespace socket_wrapper {
     // declared here to not make them "public" in header
@@ -78,5 +81,12 @@ namespace socket_wrapper {
         auto address = std::string(ip_address_buffer.data());
         return address;
         return "";
+    }
+    void ensureLibraryInitDone(){
+#ifdef OPENSSL_FOUND
+        SSL_library_init();
+        SSLeay_add_ssl_algorithms();
+        SSL_load_error_strings();
+#endif
     }
 }

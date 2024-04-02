@@ -2,10 +2,12 @@
 #define SOCKET_WRAPPER_UTILS_H
 
 #include "BaseTypes.h"
+#include <vector>
 
 namespace socket_wrapper {
     std::vector<NetworkInterface> getLocalNetworkInterfaces(IP_VERSION version);
     NetworkInterface getInterfaceWithMostSpecificNetmask(IP_VERSION required_ip_version);
+    void ensureLibraryInitDone();
 }
 
 #endif //SOCKET_WRAPPER_UTILS_H

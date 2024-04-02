@@ -6,6 +6,7 @@
 #include <sys/poll.h>
 #include <sys/eventfd.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include "socket_wrapper/Listener.h"
 #include "socket_wrapper/SocketException.h"
 #include "unistd.h"
@@ -18,10 +19,14 @@ namespace socket_wrapper {
         if (listener_end_fd.load() == -1) {
             throw std::runtime_error("Failed to create event_fd");
         }
-        // create the socket, we do not want it to block as we use poll TODO: currently blocking, does poll'ing itself suffice?
+        // create the socket, we do not want it to block as we use poll
         listener_socket_fd.store(socket(ip_v, SOCK_STREAM, IPPROTO_TCP));
         if (listener_socket_fd.load() < 0) {
             throw SocketException(SocketException::SOCKET_SOCKET, errno);
+        }
+        // make non blocking
+        if (fcntl(listener_socket_fd.load(), F_SETFL, O_NONBLOCK) < 0) {
+            throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
         }
         // assign ip and port
         if (version == IPv6) {
@@ -39,6 +44,7 @@ namespace socket_wrapper {
                 throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
             }
 #endif
+
             // bind socket to address
             if ((bind(listener_socket_fd.load(), (sockaddr *) &servaddr, sizeof(servaddr))) != 0) {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
@@ -145,10 +151,34 @@ namespace socket_wrapper {
             struct sockaddr incoming_stream_addr;
             socklen_t incoming_stream_addr_length = sizeof(sockaddr);
             if ((connecting_fd = ::accept(listener_socket_fd.load(), &incoming_stream_addr,
-                                        &incoming_stream_addr_length)) < 0) {
+                                          &incoming_stream_addr_length)) < 0) {
                 throw SocketException(SocketException::SOCKET_ACCEPT, errno);
             } else {
+#ifdef OPENSSL_FOUND
+                if (ssl_ctx == nullptr) {
+                    return Stream(connecting_fd);
+                } else {
+                    auto ssl = SSL_new(ssl_ctx);
+                    SSL_set_fd(ssl, connecting_fd);
+                    // within timeout, check if we can accept the connection
+                    auto start_time = std::chrono::steady_clock::now();
+                    bool accepted = false;
+                    while (std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::steady_clock::now() - start_time).count() < timeout || timeout < 0) {
+                        if (SSL_accept(ssl) > 0) {
+                            accepted = true;
+                            break;
+                        }
+                        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                    }
+                    if (!accepted) {
+                        throw SocketException(SocketException::SOCKET_ACCEPT, errno);
+                    }
+                    return Stream(connecting_fd, ssl);
+                }
+#else
                 return Stream(connecting_fd);
+#endif
 
             }
         } else if (poll_fds[1].revents != 0) {
@@ -157,8 +187,15 @@ namespace socket_wrapper {
         throw SocketException(SocketException::SOCKET_ACCEPT, errno);
     }
 
-    Listener::Listener(int port, IP_VERSION version, bool reuse) {
-        auto ip_v = (version == IP_VERSION::IPv6) ? AF_INET6 : AF_INET;
+    Listener::Listener(int
+                       port, IP_VERSION
+                       version, bool
+                       reuse) {
+        createSocket(port, version, reuse);
+    }
+
+    void Listener::createSocket(int port, const IP_VERSION &version, bool reuse) {
+        auto ip_v = (version == IPv6) ? AF_INET6 : AF_INET;
         listener_end_fd.store(eventfd(0, EFD_SEMAPHORE));
         stopped_accepting.store(false);
         // create the socket, we do not want it to block as we use poll
@@ -174,7 +211,7 @@ namespace socket_wrapper {
             servaddr.sin6_addr = in6addr_any;
             servaddr.sin6_port = htons(port);
             // reuse addr
-            if(reuse) {
+            if (reuse) {
                 int optval = 1;
                 if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                     throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
@@ -197,7 +234,7 @@ namespace socket_wrapper {
             servaddr.sin_family = ip_v;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
             servaddr.sin_port = htons(port);
-            if(reuse) {
+            if (reuse) {
                 int optval = 1;
                 if (setsockopt(listener_socket_fd.load(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
                     throw SocketException(SocketException::SOCKET_SET_OPTION, errno);
@@ -228,11 +265,39 @@ namespace socket_wrapper {
         }
     }
 
-    Listener::~Listener() noexcept {
+    Listener::~Listener()
+    noexcept {
         stopAccepting();
     }
 
     int Listener::getFdForPoll() {
         return listener_socket_fd;
     }
+
+#ifdef OPENSSL_FOUND
+
+    Listener::Listener(std::string
+                       cert_path, std::string
+                       key_path, int
+                       port, IP_VERSION
+                       version, bool
+                       reuse) {
+        const SSL_METHOD *method;
+        method = TLS_server_method();
+        ssl_ctx = SSL_CTX_new(method);
+        if (!ssl_ctx) {
+            throw SocketException(SocketException::SOCKET_SSL_CREATE, 0);
+        }
+        if (SSL_CTX_use_certificate_file(ssl_ctx, cert_path.c_str(), SSL_FILETYPE_PEM) <= 0) {
+            throw SocketException(SocketException::SOCKET_SSL_CERTIFICATE, 0);
+        }
+        if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_path.c_str(), SSL_FILETYPE_PEM) <= 0) {
+            throw SocketException(SocketException::SOCKET_SSL_KEY, 0);
+        }
+        createSocket(port, version, reuse);
+
+
+    }
+
+#endif
 }

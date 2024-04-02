@@ -8,6 +8,10 @@
 #include "BaseTypes.h"
 #include <sys/socket.h>
 
+#ifdef OPENSSL_FOUND
+#include <openssl/ssl.h>
+#endif
+
 namespace socket_wrapper {
 /**
  * @brief A wrapper class for c streams, following RAII principles
@@ -16,11 +20,8 @@ namespace socket_wrapper {
         friend StreamFactory;
         friend ListenerBase;
         friend Listener;
+        bool is_secure = false;
     public:
-        /**
-         * a Stream should not be created without an underlying socket
-         */
-        Stream() = delete;
 
         /**
          * (copy constructor)
@@ -38,7 +39,7 @@ namespace socket_wrapper {
         /**
          * closes managed socket
          */
-        ~Stream() noexcept;
+        virtual ~Stream() noexcept;
 
         /**
          * (move assignment)
@@ -73,12 +74,23 @@ namespace socket_wrapper {
          * aborts all currently running reads on the Stream
          */
         void stopReads();
+        bool isSecure() const;
     private:
         /**
         * creates a Stream object managing the file descriptor, should only be called by StreamFactory
         * @param socket_fd
         */
         explicit Stream(int socket_fd);
+
+#ifdef OPENSSL_FOUND
+        /**
+         * creates a Stream object managing the file descriptor, should only be called by StreamFactory
+         * @param socket_fd
+         * @param ssl_data
+         */
+        Stream(int socket_fd, SSL *ssl_data);
+#endif
+        std::string get_chipher_name();
         struct sockaddr destination_addr; // the sockaddr this Stream is connected to
         int stream_file_descriptor;
 
@@ -87,6 +99,14 @@ namespace socket_wrapper {
         static int const kInvalidSocketFdMarker = -1;
         static int64_t const kSocketRetryIntervallMs = 50;
         std::atomic<int> stop_all_operations_event_fd;
+
+        void insecure_write(const char *buffer, size_t size, int attempts);
+        size_t insecure_read(char *buffer, size_t max_bytes_to_read, size_t min_bytes_to_read, int timeout_ms);
+        void secure_write(const char *buffer, size_t size, int attempts);
+        size_t secure_read(char *buffer, size_t max_bytes_to_read, size_t min_bytes_to_read, int timeout_ms);
+        #ifdef OPENSSL_FOUND
+            SSL *ssl_data = nullptr;
+        #endif
     };
 }
 

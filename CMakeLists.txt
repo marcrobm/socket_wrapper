@@ -1,4 +1,4 @@
-SET(BUILD_TESTS ON CACHE BOOL "Build tests")
+SET(BUILD_TESTS OFF CACHE BOOL "Build tests")
 # This is the makefile for the eznetwork library which provides a wrapper around bare c network communication
 cmake_minimum_required(VERSION 3.9)
 project(socket_wrapper

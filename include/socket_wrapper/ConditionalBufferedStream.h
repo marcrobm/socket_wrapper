@@ -3,6 +3,7 @@
 #include "socket_wrapper/BufferedStream.h"
 #include "SocketException.h"
 #include <functional>
+#include <stdexcept>
 
 namespace socket_wrapper {
     /**

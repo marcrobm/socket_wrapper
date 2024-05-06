@@ -2,6 +2,7 @@
 #include <cstring>
 #include "socket_wrapper/BufferedStream.h"
 #include "socket_wrapper/SocketException.h"
+#include <stdexcept>
 namespace socket_wrapper {
 
     BufferedStream::BufferedStream(Stream src_stream, size_t buffer_size) : stream(std::move(src_stream)),

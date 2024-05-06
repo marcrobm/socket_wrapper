@@ -16,11 +16,30 @@ namespace socket_wrapper {
     UdpDatagram::UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port,
                              socket_wrapper::IP_VERSION version, int buffer_size) : ip_version(version) {
         if (version == IP_VERSION::IPv6) {
-            throw std::logic_error("CreateDatagram does not support IPv6 as of now");
+            struct sockaddr_in6 receiver_address;
+            if ((socket_fd = socket(AF_INET6, SOCK_DGRAM | SO_REUSEADDR, IPPROTO_UDP)) < 0) {
+                throw SocketException(SocketException::SOCKET_SOCKET, errno);
+            }
+            int one = 1;
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+#ifdef SO_REUSEPORT
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(int));
+#endif
+            bzero(&receiver_address, sizeof(receiver_address));
+            // assign IP, PORT
+            receiver_address.sin6_family = AF_INET6;
+            receiver_address.sin6_addr = in6addr_any;
+            receiver_address.sin6_port = htons(listener_port);
+            if (::bind(socket_fd, (struct sockaddr *) &receiver_address, sizeof(receiver_address)) < 0) {
+                throw SocketException(SocketException::SOCKET_BIND, errno);
+            }
         } else {
             struct sockaddr_in receiver_address;
             if ((socket_fd = socket(AF_INET, SOCK_DGRAM | SO_REUSEADDR, IPPROTO_UDP)) < 0) {
+
                 throw SocketException(SocketException::SOCKET_SOCKET, errno);
+
+
             }
             int one = 1;
             setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));

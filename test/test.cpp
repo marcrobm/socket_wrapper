@@ -7,8 +7,11 @@
 #include "socket_wrapper/Utils.h"
 
 using namespace std;
-#define TEST_IP_VERSION socket_wrapper::IPv4
-//#define TEST_IP_VERSION socket_wrapper::IPv6
+//#define TEST_IP_VERSION socket_wrapper::IPv4
+#define TEST_IP_VERSION socket_wrapper::IPv6
+//#define TEST_LOCAL_ADDRESS "127.0.0.0"
+#define TEST_LOCAL_ADDRESS "::1"
+
 
 TEST(ConditionalBufferedStream, ReadUntilDelimiter) {
     using namespace socket_wrapper;
@@ -205,12 +208,12 @@ TEST(Datagram, SendthenRead) {
     auto conn = socket_wrapper::UdpDatagram("127.0.0.0", 8001, TEST_IP_VERSION);
     std::string message = "SomeTestString";
     auto sent_packet = std::vector<char>(message.begin(), message.end());
-    conn.write(sent_packet, "127.0.0.0", 8001);
+    conn.write(sent_packet, TEST_LOCAL_ADDRESS, 8001);
     auto received_packet = conn.read(100);
     ASSERT_EQ(received_packet, sent_packet);
 }
-TEST(Datagram, Multicast) {
-    auto conn = socket_wrapper::UdpDatagram("0.0.0.0", 8001, TEST_IP_VERSION);
+TEST(Datagram, MulticastIpV4) {
+    auto conn = socket_wrapper::UdpDatagram("0.0.0.0", 8001, socket_wrapper::IPv4);
     conn.subscribeToMulticast("224.1.2.3");
     std::string message = "SomeTestString";
     auto sent_packet = std::vector<char>(message.begin(), message.end());
@@ -220,8 +223,8 @@ TEST(Datagram, Multicast) {
 }
 
 TEST(Datagram, MultipleMulticast) {
-    auto connA = socket_wrapper::UdpDatagram("0.0.0.0", 8001, TEST_IP_VERSION);
-    auto connB = socket_wrapper::UdpDatagram("0.0.0.0", 8001, TEST_IP_VERSION);
+    auto connA = socket_wrapper::UdpDatagram("0.0.0.0", 8001, socket_wrapper::IPv4);
+    auto connB = socket_wrapper::UdpDatagram("0.0.0.0", 8001, socket_wrapper::IPv4);
     connA.subscribeToMulticast("224.1.2.3");
     connB.subscribeToMulticast("224.1.2.3");
     std::string message = "SomeTestString";
@@ -230,6 +233,17 @@ TEST(Datagram, MultipleMulticast) {
 
     auto received_packet = connB.read(100);
     ASSERT_EQ(received_packet, sent_packet);
+}
+
+TEST(Datagram, GetSenderAddr) {
+    auto connA = socket_wrapper::UdpDatagram("::1", 8001, socket_wrapper::IPv6);
+    auto connB = socket_wrapper::UdpDatagram("::1", 8001, socket_wrapper::IPv6);
+    std::string message = "SomeTestString";
+    auto sent_packet = std::vector<char>(message.begin(), message.end());
+    connA.write(sent_packet, "::1", 8001);
+    std::string sender_ip;
+    auto received_packet = connB.read(100, &sender_ip);
+    ASSERT_EQ(sender_ip, "::1");
 }
 
 TEST(Utils, GetLocalIpAddresses) {

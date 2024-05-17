@@ -16,7 +16,23 @@ namespace socket_wrapper {
     UdpDatagram::UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port,
                              socket_wrapper::IP_VERSION version, int buffer_size) : ip_version(version) {
         if (version == IP_VERSION::IPv6) {
-            throw std::logic_error("CreateDatagram does not support IPv6 as of now");
+            struct sockaddr_in6 receiver_address;
+            if ((socket_fd = socket(AF_INET6, SOCK_DGRAM | SO_REUSEADDR, IPPROTO_UDP)) < 0) {
+                throw SocketException(SocketException::SOCKET_SOCKET, errno);
+            }
+            int one = 1;
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+#ifdef SO_REUSEPORT
+            setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(int));
+#endif
+            bzero(&receiver_address, sizeof(receiver_address));
+            // assign IP, PORT
+            receiver_address.sin6_family = AF_INET6;
+            receiver_address.sin6_addr = in6addr_any;
+            receiver_address.sin6_port = htons(listener_port);
+            if (::bind(socket_fd, (struct sockaddr *) &receiver_address, sizeof(receiver_address)) < 0) {
+                throw SocketException(SocketException::SOCKET_BIND, errno);
+            }
         } else {
             struct sockaddr_in receiver_address;
             if ((socket_fd = socket(AF_INET, SOCK_DGRAM | SO_REUSEADDR, IPPROTO_UDP)) < 0) {
@@ -75,7 +91,7 @@ namespace socket_wrapper {
         }
     }
 
-    std::vector<char> UdpDatagram::read(int timeout_ms) {
+    std::vector<char> UdpDatagram::read(int timeout_ms,std::string* sender_ip) {
         std::array<pollfd, 2> poll_fds = {{{.fd = socket_fd, .events = POLLIN, .revents = 0},
                                            {.fd = stop_all_operations_event_fd, .events = POLLIN, .revents = 0}}};
         if (poll(poll_fds.data(), poll_fds.size(), timeout_ms) == timeout_ms) {
@@ -84,8 +100,22 @@ namespace socket_wrapper {
             struct msghdr msg;
             struct iovec iov;
             msg = setMsghdrParams(msg, iov);
+            struct sockaddr_storage src_addr_storage;
+            msg.msg_name = &src_addr_storage;
+            msg.msg_namelen = sizeof(src_addr_storage);
             ssize_t read_result = recvmsg(socket_fd, &msg, 0);
             assertRecvmsgSucceded(msg, read_result);
+            if (ip_version == IP_VERSION::IPv6) {
+                struct sockaddr_in6 *src_addr = (struct sockaddr_in6 *) msg.msg_name;
+                if (sender_ip) {
+                    *sender_ip = inet_ntop(AF_INET6, &src_addr->sin6_addr, buffer.data(), buffer.size());
+                }
+            } else {
+                struct sockaddr_in *src_addr = (struct sockaddr_in *) msg.msg_name;
+                if (sender_ip) {
+                    *sender_ip = inet_ntoa(src_addr->sin_addr);
+                }
+            }
             return {buffer.begin(), buffer.begin() + read_result};
         } else if (poll_fds[1].revents != 0) {
             throw SocketException(SocketException::SOCKET_TERMINATION_REQUEST, errno);
@@ -117,7 +147,15 @@ namespace socket_wrapper {
 
     void UdpDatagram::write(const std::vector<char> &msg_data, const std::string &destination_ip, int port) {
         if (ip_version == IP_VERSION::IPv6) {
-            throw std::logic_error("IPv6 is not supported as of now");
+            struct sockaddr_in6 dst_addr;
+            // assign IP, PORT
+            dst_addr.sin6_family = AF_INET6;
+            dst_addr.sin6_addr = in6addr_any;
+            dst_addr.sin6_port = htons(port);
+            if (sendto(socket_fd, msg_data.data(), msg_data.size(), 0, (struct sockaddr *) &dst_addr,
+                       sizeof(dst_addr)) == -1) {
+                throw SocketException(SocketException::SOCKET_WRITE, errno);
+            }
         } else {
             struct sockaddr_in dst_addr;
             // assign IP, PORT

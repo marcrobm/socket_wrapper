@@ -18,7 +18,7 @@ namespace socket_wrapper {
         UdpDatagram() = delete;
         UdpDatagram(const std::string &listener_ip_addr, uint16_t listener_port, IP_VERSION version, int buffer_size = 65536);
         void subscribeToMulticast(const std::string& group_addr);
-        std::vector<char> read(int timeout_ms = -1);
+        std::vector<char> read(int timeout_ms = -1, std::string* sender_ip = nullptr);
         void write(const std::vector<char> &msg_data, const std::string &destination_ip, int port);
 
         void stopReads();

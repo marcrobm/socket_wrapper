@@ -105,16 +105,17 @@ namespace socket_wrapper {
             msg.msg_namelen = sizeof(src_addr_storage);
             ssize_t read_result = recvmsg(socket_fd, &msg, 0);
             assertRecvmsgSucceded(msg, read_result);
+            std::array<char, 128> addr_buffer{};
+            memset(addr_buffer.data(), 0, addr_buffer.size());
             if (ip_version == IP_VERSION::IPv6) {
                 struct sockaddr_in6 *src_addr = (struct sockaddr_in6 *) msg.msg_name;
-                if (sender_ip) {
-                    *sender_ip = inet_ntop(AF_INET6, &src_addr->sin6_addr, buffer.data(), buffer.size());
-                }
+                inet_ntop(AF_INET6, &src_addr->sin6_addr, addr_buffer.data(), addr_buffer.size());
             } else {
                 struct sockaddr_in *src_addr = (struct sockaddr_in *) msg.msg_name;
-                if (sender_ip) {
-                    *sender_ip = inet_ntoa(src_addr->sin_addr);
-                }
+                inet_ntop(AF_INET, &src_addr->sin_addr, addr_buffer.data(), addr_buffer.size());
+            }
+            if(sender_ip){
+                *sender_ip = std::string(addr_buffer.data());
             }
             return {buffer.begin(), buffer.begin() + read_result};
         } else if (poll_fds[1].revents != 0) {

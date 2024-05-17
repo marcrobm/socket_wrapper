@@ -205,7 +205,7 @@ TEST(Listener, ConnectDirectly){
 
 
 TEST(Datagram, SendthenRead) {
-    auto conn = socket_wrapper::UdpDatagram("127.0.0.0", 8001, TEST_IP_VERSION);
+    auto conn = socket_wrapper::UdpDatagram(TEST_LOCAL_ADDRESS, 8001, TEST_IP_VERSION);
     std::string message = "SomeTestString";
     auto sent_packet = std::vector<char>(message.begin(), message.end());
     conn.write(sent_packet, TEST_LOCAL_ADDRESS, 8001);
@@ -244,6 +244,7 @@ TEST(Datagram, GetSenderAddr) {
     std::string sender_ip;
     auto received_packet = connB.read(100, &sender_ip);
     ASSERT_EQ(sender_ip, "::1");
+    ASSERT_EQ(received_packet, sent_packet);
 }
 
 TEST(Utils, GetLocalIpAddresses) {

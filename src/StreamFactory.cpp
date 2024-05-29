@@ -56,7 +56,7 @@ namespace socket_wrapper {
         }
        return Stream(client_socket_fd);
     }
-
+#ifdef OPENSSL_FOUND
     Stream StreamFactory::CreateSecureTcpStreamToServer(std::string ip_address, uint16_t port, IP_VERSION version) {
         int client_socket_fd;
         if (version == IP_VERSION::IPv6) {
@@ -102,5 +102,5 @@ namespace socket_wrapper {
         Stream x(client_socket_fd, ssl);
         return x;
     }
-
+#endif
 }

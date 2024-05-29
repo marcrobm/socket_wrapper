@@ -136,7 +136,7 @@ namespace socket_wrapper {
         }
     }
 
-
+#ifdef OPENSSL_FOUND
     size_t Stream::secure_read(char *buffer, size_t max_bytes_to_read, size_t min_bytes_to_read, int timeout_ms) {
         size_t read_bytes = 0;
         while (read_bytes < min_bytes_to_read) {
@@ -197,7 +197,7 @@ namespace socket_wrapper {
             throw SocketException(SocketException::SOCKET_WRITE_PARTIAL, errno, total_written_bytes);
         }
     }
-
+#endif
     void Stream::stopReads() {
         uint64_t semaphore_value = std::numeric_limits<uint16_t>::max();
         ::write(stop_all_operations_event_fd, &semaphore_value, sizeof(semaphore_value));
@@ -209,20 +209,29 @@ namespace socket_wrapper {
 
     size_t Stream::read(char *buffer, size_t max_bytes_to_read, size_t min_bytes_to_read, int timeout_ms) {
         if (is_secure) {
-            return secure_read(buffer, max_bytes_to_read, min_bytes_to_read, timeout_ms);
-        } else {
+#ifdef OPENSSL_FOUND
+	 	return secure_read(buffer, max_bytes_to_read, min_bytes_to_read, timeout_ms);
+#else
+		throw std::runtime_error("no open ssl present");
+#endif	
+	} else {
             return insecure_read(buffer, max_bytes_to_read, min_bytes_to_read, timeout_ms);
         }
     }
 
     void Stream::write(const char *buffer, size_t size, int attempts) {
-        if (is_secure) {
-            secure_write(buffer, size, attempts);
+        if (is_secure) 
+	{
+#ifdef OPENSSL_FOUND
+	    secure_write(buffer, size, attempts);
+#else 
+	   throw std::runtime_error("no open ssl present");	
+#endif
         } else {
             insecure_write(buffer, size, attempts);
         }
     }
-
+#ifdef OPENSSL_FOUND
     Stream::Stream(int socket_fd, SSL *ssl_data) : stream_file_descriptor(socket_fd), ssl_data(ssl_data) {
         is_secure = true;
         /// create the end program listener
@@ -231,7 +240,7 @@ namespace socket_wrapper {
             throw std::runtime_error("Failed to create event_fd");
         }
     }
-
+#endif
     std::string Stream::get_chipher_name() {
 #ifdef OPENSSL_FOUND
         if (is_secure) {

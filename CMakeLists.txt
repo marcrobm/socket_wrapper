@@ -28,7 +28,7 @@ set(HEADER_FILES
         include/socket_wrapper/UdpDatagram.h)
 
 ############################# openssl #############################################################
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL)
 if(OPENSSL_FOUND)
     message("found openssl")
     include_directories(${OPENSSL_INCLUDE_DIR})

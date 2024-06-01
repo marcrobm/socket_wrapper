@@ -264,28 +264,57 @@ TEST(Utils, GetLocalIpAddresses) {
 }
 
 #ifdef OPENSSL_FOUND
+
+TEST(SSL, ReadInternet){
+    using namespace socket_wrapper;
+    auto s = ConditionalBufferedStream(
+            BufferedStream(StreamFactory::CreateSecureTcpStreamToServer("2a00:1450:4001:829::2003", 443, IPv6), 1024));
+    int on_newline_fd = s.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
+    s.start();
+    s.write("GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n");
+    std::string response = s.readBlockingStr(on_newline_fd, 1000);
+    std::cout << "Got response:" << response << "\n";
+    ASSERT_FALSE(response.empty());
+}
+
+TEST(SSL, Listener){
+    using namespace socket_wrapper;
+    Listener l = Listener("cert.pem","key.pem",4433,TEST_IP_VERSION);
+    std::cout << "Waiting for new client" << std::endl;
+    auto s = l.accept();
+    auto condBuffered = ConditionalBufferedStream(BufferedStream(std::move(s), 1024));
+    int nl = condBuffered.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
+    condBuffered.start();
+    std::string response = condBuffered.readBlockingStr(nl);
+    std::cout << "Got response:" << response << "\n";
+}
+
 TEST(SSL, EncryptedConnect){
     using namespace socket_wrapper;
     Listener l = Listener("cert.pem","key.pem",4433,TEST_IP_VERSION);
     auto server = std::jthread([&](){
         try {
+            std::cout << "Waiting for new client" << std::endl;
             auto c = ConditionalBufferedStream(BufferedStream(l.accept(), 1024));
             int nl = c.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
             c.start();
-            auto s = c.readBlockingStr(nl, 1000);
+            auto s = c.readBlockingStr(nl, 2000);
+            std::cout << "server Got response:" << s << "\n";
             c.write("ECHO:" + s);
         } catch (SocketException &e) {
             std::cerr << "Server error:" << e.what() << std::endl;
         }
     });
     try {
-        std::this_thread::sleep_for(1s);
+        std::cout << "Connecting to server..." << std::endl;
         auto s = ConditionalBufferedStream(
                 BufferedStream(StreamFactory::CreateSecureTcpStreamToServer("127.0.0.1", 4433, IPv4), 1024));
         int on_newline_fd = s.createEventfdOnCondition(ConditionalBufferedStream::getDelimiterCondition('\n'));
         s.start();
         s.write("ABC\n");
+        std:cout << "Waiting for response" << std::endl;
         std::string response = s.readBlockingStr(on_newline_fd, 1000);
+        std::cout << "Got response:" << response << "\n";
         assert(response == "ECHO:ABC\n");
     }catch (SocketException &e){
         std::cerr << "Client error:" << e.what() << std::endl;

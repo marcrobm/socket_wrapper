@@ -29,6 +29,7 @@ namespace socket_wrapper {
             {SocketException::Type::SOCKET_SSL_CONNECT,               "SOCKET_SSL_CONNECT"},
             {SocketException::Type::SOCKET_SSL_CERTIFICATE,          "SOCKET_SSL_CERTIFICATE"},
             {SocketException::Type::SOCKET_SSL_KEY,                  "SOCKET_SSL_KEY"},
+            {SocketException::Type::SOCKET_SSL_CIPHER,               "SOCKET_SSL_CIPHER"},
     };
 
     const char *SocketException::what() const noexcept {

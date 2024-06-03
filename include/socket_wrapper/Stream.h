@@ -75,6 +75,8 @@ namespace socket_wrapper {
          */
         void stopReads();
         bool isSecure() const;
+        std::string getPublicKey() const;
+        std::string getCipherName() const;
     private:
         /**
         * creates a Stream object managing the file descriptor, should only be called by StreamFactory
@@ -90,7 +92,6 @@ namespace socket_wrapper {
          */
         Stream(int socket_fd, SSL *ssl_data);
 #endif
-        std::string get_chipher_name();
         struct sockaddr destination_addr; // the sockaddr this Stream is connected to
         int stream_file_descriptor;
 

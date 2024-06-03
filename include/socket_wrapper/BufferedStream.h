@@ -69,6 +69,7 @@ namespace socket_wrapper {
         size_t readAvailableDataIntoBuffer(int timeout_ms = -1);
         std::vector<char> PopFromBuffer(size_t bytes_to_read);
 
+        const Stream & getStream() const;
     };
 }
 #endif

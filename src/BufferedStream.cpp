@@ -88,5 +88,7 @@ namespace socket_wrapper {
         stream.stopReads();
     }
 
-
+    const Stream & BufferedStream::getStream() const {
+        return stream;
+    }
 }

@@ -73,6 +73,9 @@ namespace socket_wrapper {
          * aborts all currently running reads on the Stream
          */
         void stopReads();
+
+        const Stream &getStream() const;
+
     private:
         SocketException::Type last_ex = SocketException::SOCKET_OK;
         std::thread worker;

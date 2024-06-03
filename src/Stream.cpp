@@ -172,6 +172,44 @@ namespace socket_wrapper {
         return read_bytes;
     }
 
+    std::string Stream::getPublicKey() const{
+#ifdef OPENSSL_FOUND
+        if (is_secure) {
+            X509 *cert = SSL_get_peer_certificate(ssl_data);
+            if (cert == nullptr) {
+                throw std::runtime_error("No certificate found");
+            }
+            EVP_PKEY *public_key = X509_get_pubkey(cert);
+            if (public_key == nullptr) {
+                throw std::runtime_error("No public key found");
+            }
+            // format as hex
+            std::string result;
+            BIO *bio = BIO_new(BIO_s_mem());
+            if (bio == nullptr) {
+                throw std::runtime_error("Error creating BIO");
+            }
+            if (PEM_write_bio_PUBKEY(bio, public_key) == 0) {
+                BIO_free(bio);
+                throw std::runtime_error("Error writing public key to BIO");
+            }
+            char *buffer;
+            long length = BIO_get_mem_data(bio, &buffer);
+            result = std::string(buffer, length);
+            BIO_free(bio);
+            EVP_PKEY_free(public_key);
+            X509_free(cert);
+            return result;
+        } else {
+            return "None";
+        }
+#else
+        return "None";
+#endif
+    }
+
+
+
     void Stream::secure_write(const char *buffer, size_t size, int attempts) {
         ssize_t total_written_bytes = 0;
         while (attempts--) {
@@ -213,19 +251,19 @@ namespace socket_wrapper {
 	 	return secure_read(buffer, max_bytes_to_read, min_bytes_to_read, timeout_ms);
 #else
 		throw std::runtime_error("no open ssl present");
-#endif	
+#endif
 	} else {
             return insecure_read(buffer, max_bytes_to_read, min_bytes_to_read, timeout_ms);
         }
     }
 
     void Stream::write(const char *buffer, size_t size, int attempts) {
-        if (is_secure) 
+        if (is_secure)
 	{
 #ifdef OPENSSL_FOUND
 	    secure_write(buffer, size, attempts);
-#else 
-	   throw std::runtime_error("no open ssl present");	
+#else
+	   throw std::runtime_error("no open ssl present");
 #endif
         } else {
             insecure_write(buffer, size, attempts);
@@ -241,15 +279,16 @@ namespace socket_wrapper {
         }
     }
 #endif
-    std::string Stream::get_chipher_name() {
+
+    std::string Stream::getCipherName() const {
 #ifdef OPENSSL_FOUND
         if (is_secure) {
             return SSL_get_cipher_name(ssl_data);
         } else {
-            return "None";
+            throw SocketException(SocketException::Type::SOCKET_SSL_CIPHER);
         }
 #else
-        return "OpenSSL not found, no encryption available";
+        throw SocketException(SocketException::Type::SOCKET_SSL_CIPHER);
 #endif
     }
 }

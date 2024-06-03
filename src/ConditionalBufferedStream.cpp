@@ -148,4 +148,8 @@ namespace socket_wrapper {
         stream.stopReads();
     }
 
+    const Stream &ConditionalBufferedStream::getStream() const {
+        return stream.getStream();
+    }
+
 }

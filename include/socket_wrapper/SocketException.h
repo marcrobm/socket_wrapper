@@ -32,6 +32,7 @@ namespace socket_wrapper {
             SOCKET_SSL_CONNECT,
             SOCKET_SSL_CERTIFICATE,
             SOCKET_SSL_KEY,
+            SOCKET_SSL_CIPHER,
         };
 
         explicit SocketException(Type t, int c_error = -1, ssize_t processed_bytes = -1);

@@ -171,7 +171,7 @@ namespace socket_wrapper {
         }
         return read_bytes;
     }
-
+#endif
     std::string Stream::getPublicKey() const{
 #ifdef OPENSSL_FOUND
         if (is_secure) {
@@ -209,7 +209,7 @@ namespace socket_wrapper {
     }
 
 
-
+#ifdef OPENSSL_FOUND
     void Stream::secure_write(const char *buffer, size_t size, int attempts) {
         ssize_t total_written_bytes = 0;
         while (attempts--) {

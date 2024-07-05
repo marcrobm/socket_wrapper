@@ -151,8 +151,10 @@ namespace socket_wrapper {
             struct sockaddr_in6 dst_addr;
             // assign IP, PORT
             dst_addr.sin6_family = AF_INET6;
-            dst_addr.sin6_addr = in6addr_any;
             dst_addr.sin6_port = htons(port);
+            if (inet_pton(AF_INET6, destination_ip.c_str(), &dst_addr.sin6_addr) != 1) {
+                 throw SocketException(SocketException::SOCKET_WRITE, errno);
+            }
             if (sendto(socket_fd, msg_data.data(), msg_data.size(), 0, (struct sockaddr *) &dst_addr,
                        sizeof(dst_addr)) == -1) {
                 throw SocketException(SocketException::SOCKET_WRITE, errno);

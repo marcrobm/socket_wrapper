@@ -32,8 +32,7 @@ namespace socket_wrapper {
         return description.c_str();
     }
 
-    SocketException::SocketException(SocketException::Type t, int c_error, ssize_t processed_bytes) : exception_type(t),
+    SocketException::SocketException(SocketException::Type t, int c_error, ssize_t processed_bytes) : processed_bytes(processed_bytes),
                                                                                                       c_error(c_error),
-                                                                                                      processed_bytes(
-                                                                                                              processed_bytes) {}
+                                                                                                      exception_type(t){}
 }

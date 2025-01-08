@@ -25,7 +25,7 @@ namespace socket_wrapper {
         }
         // assign ip and port
         if (version == IPv6) {
-            struct sockaddr_in6 servaddr, cli;
+            struct sockaddr_in6 servaddr;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin6_family = ip_v;
             servaddr.sin6_addr = in6addr_any;
@@ -44,7 +44,7 @@ namespace socket_wrapper {
                 throw SocketException(SocketException::SOCKET_BIND, errno);
             }
         } else {
-            struct sockaddr_in servaddr, cli;
+            struct sockaddr_in servaddr;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = ip_v;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -168,7 +168,7 @@ namespace socket_wrapper {
         }
         // assign ip and port
         if (version == IPv6) {
-            struct sockaddr_in6 servaddr, cli;
+            struct sockaddr_in6 servaddr;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin6_family = ip_v;
             servaddr.sin6_addr = in6addr_any;
@@ -192,7 +192,7 @@ namespace socket_wrapper {
             }
 
         } else {
-            struct sockaddr_in servaddr, cli;
+            struct sockaddr_in servaddr;
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = ip_v;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);

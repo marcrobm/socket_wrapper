@@ -10,7 +10,7 @@ namespace socket_wrapper {
                                                                             buffer_write_offset(0) {
         stream_buffer = (char *) calloc(buffer_size, 1);
     }
-    BufferedStream::BufferedStream(BufferedStream &&src) noexcept: stream(std::move(src.stream)),stream_buffer_size(src.stream_buffer_size),buffer_write_offset(src.buffer_write_offset),stream_buffer(src.stream_buffer) {
+    BufferedStream::BufferedStream(BufferedStream &&src) noexcept: stream(std::move(src.stream)),stream_buffer_size(src.stream_buffer_size),stream_buffer(src.stream_buffer),buffer_write_offset(src.buffer_write_offset) {
         src.stream_buffer = (char*)-1; // invalidate the pointer
     }
 

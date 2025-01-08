@@ -63,8 +63,8 @@ namespace socket_wrapper {
     private:
         Stream stream;
         std::recursive_mutex buffer_lock;
-        char *stream_buffer;
         size_t stream_buffer_size;
+        char *stream_buffer;
         size_t buffer_write_offset; // the number of bytes currently in the buffer
         size_t readAvailableDataIntoBuffer(int timeout_ms = -1);
         std::vector<char> PopFromBuffer(size_t bytes_to_read);

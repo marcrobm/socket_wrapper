@@ -105,13 +105,13 @@ namespace socket_wrapper {
             } else {
                 total_written_bytes += write_result;
             }
-            if (total_written_bytes == size) {
+            if ((size_t)total_written_bytes == size) {
                 break;
             }
             auto wait_time = kSocketRetryIntervallMs;
             std::this_thread::sleep_for(std::chrono::milliseconds(wait_time));
         }
-        if (total_written_bytes != size) {
+        if ((size_t)total_written_bytes != size) {
             // we did not manage to write all the data
             throw SocketException(SocketException::SOCKET_WRITE_PARTIAL, errno, total_written_bytes);
         }
